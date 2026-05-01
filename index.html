@@ -11,8 +11,8 @@
   <meta property="og:description" content="Divination (i) Tsutsuji — Guanyin Oracle">
   <meta property="og:image" content="https://i.postimg.cc/cLc0dSD1/Kwan-Yin.png">
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" href="https://i.postimg.cc/cLc0dSD1/Kwan-Yin.png">
-  <link rel="apple-touch-icon" href="https://i.postimg.cc/cLc0dSD1/Kwan-Yin.png">
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/CK7JtjmC/Lladro-GYGlow-Green-Med.png">
+  <link rel="apple-touch-icon" href="https://i.postimg.cc/CK7JtjmC/Lladro-GYGlow-Green-Med.png">
 
   <style>
 
@@ -768,6 +768,19 @@ html, body {
       <button id="kw-print-btn" onclick="kwShowResult()" style="display:none; margin-top:20px; font-family:'Cinzel',serif; font-size:13px; letter-spacing:0.12em; color:var(--navy); background:var(--sky); border:none; border-radius:10px; padding:12px 28px; cursor:pointer; font-weight:700;">Print the Result</button>
     </div>
 
+    <!-- Unreachable popup -->
+    <div id="kw-unreachable-popup" style="display:none; width:100%; max-width:420px; margin-top:16px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,100,100,0.4); border-radius:14px; padding:20px 18px; text-align:center;">
+      <div style="font-family:'Cinzel',serif; font-size:13px; color:#ff8a80; letter-spacing:0.08em; margin-bottom:6px;">⚠ Quantum source unreachable</div>
+      <div style="font-family:'Crimson Pro',serif; font-size:13px; font-style:italic; color:rgba(255,255,255,0.6); margin-bottom:16px;">The quantum vacuum API is not responding at this moment.</div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button onclick="kwRetryQuantum()" style="width:100%; padding:12px; background:rgba(0,191,255,0.15); border:1px solid rgba(0,191,255,0.4); color:#00BFFF; font-family:'Cinzel',serif; font-size:12px; letter-spacing:0.1em; border-radius:10px; cursor:pointer;">↺ Try Again</button>
+        <div style="display:flex; gap:10px;">
+          <button onclick="kwSwitchTo('random-org')" style="flex:1; padding:12px 8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.8); font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.08em; border-radius:10px; cursor:pointer;">📡 Use Atm.</button>
+          <button onclick="kwSwitchTo('crypto')" style="flex:1; padding:12px 8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.8); font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.08em; border-radius:10px; cursor:pointer;">🔐 Use Crypto</button>
+        </div>
+      </div>
+    </div>
+
     <div style="text-align:center; margin-top:32px; padding-bottom:16px;">
       <img src="https://i.postimg.cc/Qd3Ts8C0/tsutsuji_2.png" alt="Tsutsuji" style="width:56px; height:56px; object-fit:contain; opacity:0.75;">
     </div>
@@ -1037,6 +1050,19 @@ let kwLastNumber = null;
 let kwLastSource = null;
 let kwResultDateTime = '';
 
+function kwRetryQuantum() {
+  const popup = document.getElementById('kw-unreachable-popup');
+  if (popup) popup.style.display = 'none';
+  kwDraw();
+}
+
+function kwSwitchTo(method) {
+  const popup = document.getElementById('kw-unreachable-popup');
+  if (popup) popup.style.display = 'none';
+  kwSelectMethod(method);
+  kwDraw();
+}
+
 function kwSelectMethod(m) {
   kwSelectedMethod = m;
   document.querySelectorAll('.kw-method-card').forEach(c => c.classList.remove('active'));
@@ -1046,6 +1072,8 @@ function kwSelectMethod(m) {
 
 function resetKwanyin() {
   kwLastNumber = null; kwLastSource = null; kwResultDateTime = '';
+  const popup = document.getElementById('kw-unreachable-popup');
+  if (popup) popup.style.display = 'none';
   const numEl = document.getElementById('kw-number'); if (numEl) numEl.textContent = '—';
   const fateEl = document.getElementById('kw-fate'); if (fateEl) fateEl.textContent = '';
   const statusEl = document.getElementById('kw-status'); if (statusEl) statusEl.textContent = '';
@@ -1084,6 +1112,8 @@ async function kwDraw() {
   if (fateEl) fateEl.textContent = '';
   if (statusEl) statusEl.textContent = '';
   if (numEl) numEl.textContent = '—';
+  const popup = document.getElementById('kw-unreachable-popup');
+  if (popup) popup.style.display = 'none';
   let number, sourceUsed = kwSelectedMethod;
   try {
     if (kwSelectedMethod === 'crypto') {
@@ -1096,7 +1126,14 @@ async function kwDraw() {
     } else {
       if (statusEl) statusEl.textContent = 'Querying quantum vacuum…';
       try { number = await quantumFetchN(100); }
-      catch { if (statusEl) statusEl.textContent = 'ANU unreachable — using crypto'; number = cryptoRandN(100); sourceUsed = 'crypto'; }
+      catch {
+        // Show unreachable popup instead of silent fallback
+        if (statusEl) statusEl.textContent = '';
+        btn.disabled = false; btn.textContent = 'Draw a lot'; kwIsDrawing = false;
+        const popup = document.getElementById('kw-unreachable-popup');
+        if (popup) popup.style.display = 'block';
+        return;
+      }
     }
     if (numEl) numEl.classList.add('rolling');
     const end = Date.now() + 900;
@@ -1138,6 +1175,8 @@ function kwShowResult() {
   if (!kwLastNumber) return;
   const mv = document.getElementById('kw-main-view'); if (mv) mv.style.display = 'none';
   const rv = document.getElementById('kw-result-view'); if (rv) rv.style.display = 'flex';
+  // Stop infinite animations on hidden elements to save resources
+  document.querySelectorAll('.kw-method-card').forEach(c => c.style.animation = 'none');
   const rawQ = (document.getElementById('kw-question') || {}).value || '';
   const smartQ = kwSmartCapitalise(rawQ);
   const qEl = document.getElementById('kw-result-question'); if (qEl) qEl.textContent = smartQ || '(No question entered)';
@@ -1155,6 +1194,8 @@ function kwShowResult() {
 function kwAskAnother() {
   const rv = document.getElementById('kw-result-view'); if (rv) rv.style.display = 'none';
   const mv = document.getElementById('kw-main-view'); if (mv) mv.style.display = 'flex';
+  // Restore animations
+  document.querySelectorAll('.kw-method-card').forEach(c => c.style.animation = '');
   resetKwanyin();
   window.scrollTo(0, 0);
 }
