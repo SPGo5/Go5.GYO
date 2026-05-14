@@ -1505,6 +1505,136 @@ html, body {
 <script src="https://spgo5.github.io/Go5.SHARED/spgo-core.js"></script>
 
 <script>
+// ── GYO navigation overrides (defined after spgo-core.js to take precedence) ──
+const GOOGLE_CLIENT_ID = '427989206862-svhf1cote22nhdhkq68ff14446upp2m4.apps.googleusercontent.com';
+
+function goTo(screenId) {
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = 'none';
+  });
+  const el = document.getElementById(screenId);
+  if (el) { el.style.display = 'flex'; el.classList.add('active'); window.scrollTo(0, 0); }
+  if (screenId === 'screen-B2-2-2-T2') resetKwanyin();
+}
+
+function showLoginError(msg) {
+  const el = document.getElementById('login-error-gyo');
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+  goTo('screen-gyo-login');
+}
+
+function setHomeState() {
+  goTo('screen-B2-2-2-splash');
+  updateProfileCorner();
+  applyTierGating();
+}
+
+async function validateWithToken(token) {
+  showVerifying();
+  try {
+    const resp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    const info = await resp.json();
+    const email = info.email;
+    if (!email) { showLoginError('Could not get your email. Please try again.'); return; }
+
+    gasJsonp('action=validateEmail&email=' + encodeURIComponent(email), function(data) {
+      if (data.valid) {
+        currentUser = data.idCode || email;
+        currentUserName = data.name || data.idCode || email;
+        currentFsSubscriber = data.fsSubscriber === true;
+        currentHasPortal = data.hasPortal === true;
+        currentHasBara = data.hasBara === true;
+        currentTier = data.tier || 0;
+        isGuest = false;
+        try {
+          localStorage.setItem('go_saved_user', JSON.stringify({
+            user: currentUser, name: currentUserName,
+            fs: currentFsSubscriber, portal: currentHasPortal,
+            hasBara: currentHasBara, tier: currentTier,
+            email: email, savedAt: Date.now()
+          }));
+        } catch(e) {}
+        setHomeState();
+        updateProfileCorner();
+      } else {
+        showLoginError('Your account (' + email + ') is not registered.');
+      }
+    }, function() {
+      showLoginError('Connection error. Please try again.');
+    });
+  } catch(e) {
+    showLoginError('Connection error. Please try again.');
+  }
+}
+
+function checkOAuthReturn() {
+  const hash = window.location.hash;
+  if (hash && hash.includes('access_token')) {
+    const params = new URLSearchParams(hash.substring(1));
+    const token = params.get('access_token');
+    if (token) {
+      history.replaceState({}, '', window.location.pathname);
+      validateWithToken(token);
+      return;
+    }
+  }
+  try {
+    const saved = localStorage.getItem('go_saved_user');
+    if (saved) {
+      const s = JSON.parse(saved);
+      const age = Date.now() - (s.savedAt || 0);
+      if (age < 30 * 24 * 3600 * 1000 && s.user && s.email) {
+        currentUser = s.user;
+        currentUserName = s.name || s.user;
+        currentFsSubscriber = !!s.fs;
+        currentHasPortal = !!s.portal;
+        currentHasBara = !!s.hasBara;
+        currentTier = s.tier || 0;
+        isGuest = false;
+        setHomeState();
+        updateProfileCorner();
+        return;
+      } else {
+        localStorage.removeItem('go_saved_user');
+      }
+    }
+  } catch(e) {}
+  goTo('screen-gyo-login');
+}
+
+function guestLogin() {}
+
+function gyoEnter() { goTo('screen-B2-2-2-T2'); }
+
+function startGoogleLogin() {
+  const el = document.getElementById('login-error-gyo');
+  if (el) el.style.display = 'none';
+  const redirectUri = window.location.origin + '/Go5.GYO/index.html';
+  const params = new URLSearchParams({
+    client_id: GOOGLE_CLIENT_ID,
+    redirect_uri: redirectUri,
+    response_type: 'token',
+    scope: 'email profile',
+    prompt: 'select_account'
+  });
+  window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
+}
+
+function doLogout() {
+  try { localStorage.removeItem('go_saved_user'); } catch(e) {}
+  const popup = document.getElementById('logout-popup');
+  if (popup) popup.style.display = 'none';
+  currentUser = null; currentUserName = 'Guest';
+  currentFsSubscriber = false; currentHasPortal = false;
+  currentHasBara = false; currentTier = 0; isGuest = false;
+  updateProfileCorner();
+  goTo('screen-gyo-login');
+}
+
+// ── GYO Portal JS ──
 function kwDraw() {
   if (kwIsDrawing) return;
   kwIsDrawing = true;
@@ -1772,47 +1902,6 @@ function applyHaircutAdvice(el, text) {
   const logo = document.getElementById('haircut-logo-img'); if (logo) logo.classList.remove('loading');
 }
 
-// ── GYO Portal navigation overrides ──
-// spgo-core.js calls goTo('screen-B0') after login — redirect to GYO screens
-function gyoShowLogin() {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById('screen-gyo-login');
-  if (el) el.classList.add('active');
-}
-
-function gyoShowVerify() {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById('screen-gyo-verify');
-  if (el) { el.classList.add('active'); el.style.display = 'flex'; }
-}
-
-function gyoEnterPortal() {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById('screen-B2-2-2-splash');
-  if (el) el.classList.add('active');
-  updateProfileCorner();
-}
-
-// Override goTo so spgo-core login flow works in GYO
-window.goTo = function(id) {
-  if (id === 'screen-B0') { gyoEnterPortal(); return; }
-  if (id === 'screen-B0-login') { gyoShowLogin(); return; }
-  // Normal screen switching for GYO screens
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  const el = document.getElementById(id);
-  if (el) { el.classList.add('active'); window.scrollTo(0,0); }
-};
-
-// Override setHomeState — GYO has no home cards to gate
-window.setHomeState = function() { updateProfileCorner(); };
-
-// Override showLoginError
-window.showLoginError = function(msg) {
-  const el = document.getElementById('gyo-login-error');
-  if (el) { el.textContent = msg; el.style.display = 'block'; }
-  gyoShowLogin();
-};
-
 // ── Init ──
 document.addEventListener('click', function(e) {
   const popup = document.getElementById('logout-popup');
@@ -1822,28 +1911,11 @@ document.addEventListener('click', function(e) {
   }
 });
 
-// Show verify screen while checking OAuth, then enter or show login
-document.addEventListener('DOMContentLoaded', function() {
-  const hash = window.location.hash;
-  if (hash && hash.includes('access_token')) {
-    gyoShowVerify();
-    checkOAuthReturn();
-    return;
-  }
-  try {
-    const saved = localStorage.getItem('go_saved_user');
-    if (saved) {
-      const s = JSON.parse(saved);
-      const age = Date.now() - (s.savedAt || 0);
-      if (age < 30 * 24 * 3600 * 1000 && s.user && s.email) {
-        gyoShowVerify();
-        checkOAuthReturn();
-        return;
-      }
-    }
-  } catch(e) {}
-  gyoShowLogin();
-});
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', checkOAuthReturn);
+} else {
+  checkOAuthReturn();
+}
 </script>
 
 </body>
