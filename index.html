@@ -1772,6 +1772,47 @@ function applyHaircutAdvice(el, text) {
   const logo = document.getElementById('haircut-logo-img'); if (logo) logo.classList.remove('loading');
 }
 
+// ── GYO Portal navigation overrides ──
+// spgo-core.js calls goTo('screen-B0') after login — redirect to GYO screens
+function gyoShowLogin() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('screen-gyo-login');
+  if (el) el.classList.add('active');
+}
+
+function gyoShowVerify() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('screen-gyo-verify');
+  if (el) { el.classList.add('active'); el.style.display = 'flex'; }
+}
+
+function gyoEnterPortal() {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('screen-B2-2-2-splash');
+  if (el) el.classList.add('active');
+  updateProfileCorner();
+}
+
+// Override goTo so spgo-core login flow works in GYO
+window.goTo = function(id) {
+  if (id === 'screen-B0') { gyoEnterPortal(); return; }
+  if (id === 'screen-B0-login') { gyoShowLogin(); return; }
+  // Normal screen switching for GYO screens
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById(id);
+  if (el) { el.classList.add('active'); window.scrollTo(0,0); }
+};
+
+// Override setHomeState — GYO has no home cards to gate
+window.setHomeState = function() { updateProfileCorner(); };
+
+// Override showLoginError
+window.showLoginError = function(msg) {
+  const el = document.getElementById('gyo-login-error');
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+  gyoShowLogin();
+};
+
 // ── Init ──
 document.addEventListener('click', function(e) {
   const popup = document.getElementById('logout-popup');
@@ -1781,11 +1822,28 @@ document.addEventListener('click', function(e) {
   }
 });
 
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', checkOAuthReturn);
-} else {
-  checkOAuthReturn();
-}
+// Show verify screen while checking OAuth, then enter or show login
+document.addEventListener('DOMContentLoaded', function() {
+  const hash = window.location.hash;
+  if (hash && hash.includes('access_token')) {
+    gyoShowVerify();
+    checkOAuthReturn();
+    return;
+  }
+  try {
+    const saved = localStorage.getItem('go_saved_user');
+    if (saved) {
+      const s = JSON.parse(saved);
+      const age = Date.now() - (s.savedAt || 0);
+      if (age < 30 * 24 * 3600 * 1000 && s.user && s.email) {
+        gyoShowVerify();
+        checkOAuthReturn();
+        return;
+      }
+    }
+  } catch(e) {}
+  gyoShowLogin();
+});
 </script>
 
 </body>
