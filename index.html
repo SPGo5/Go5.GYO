@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>🔮 觀音靈簽 GYO · Divination (i) Tsutsuji</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,7 +14,8 @@
   <link rel="icon" type="image/png" href="https://i.postimg.cc/Wb0KsPF7/Lladro-Guan-Yin-64x64-for-avatar-icon.png">
   <link rel="apple-touch-icon" href="https://i.postimg.cc/CK7JtjmC/Lladro-GYGlow-Green-Med.png">
 
-  <style>
+  <link rel="stylesheet" href="https://spgo5.github.io/Go5.SHARED/spgo-core.css">
+<style>
 
 /* Global touch feedback — every button gets a press feel */
 button:active, a.card:active, [onclick]:active {
@@ -679,674 +680,6 @@ html, body {
   text-align: center;
 }
   </style>
-
-<!-- SPGo Shared Core -->
-<link rel="stylesheet" href="https://spgo5.github.io/Go5.SHARED/spgo-core.css">
-
-<style>
-/* Global touch feedback — every button gets a press feel */
-button:active, a.card:active, [onclick]:active {
-  opacity: 0.75 !important;
-  transform: scale(0.96) !important;
-  transition: opacity 0.08s, transform 0.08s !important;
-}
-
-/* Profile pic top-right */
-#profile-corner {
-  position: fixed;
-  top: 12px;
-  right: 14px;
-  z-index: 9999;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-#profile-corner img {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid rgba(0,191,255,0.5);
-  box-shadow: 0 0 10px rgba(0,191,255,0.3);
-}
-#profile-corner-code {
-  font-family: 'Cinzel', serif;
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  color: rgba(0,191,255,0.7);
-  margin-top: 3px;
-  max-width: 50px;
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Logout popup */
-#logout-popup {
-  position: fixed;
-  top: 60px;
-  right: 10px;
-  z-index: 9999;
-  background: rgba(0,0,60,0.97);
-  border: 1px solid rgba(0,191,255,0.35);
-  border-radius: 12px;
-  padding: 14px 18px;
-  display: none;
-  flex-direction: column;
-  gap: 10px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-  min-width: 160px;
-}
-#logout-popup button {
-  background: none;
-  border: 1px solid rgba(255,80,80,0.5);
-  color: rgba(255,150,150,0.9);
-  font-family: 'Cinzel', serif;
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  padding: 10px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  text-align: left;
-}
-#logout-popup button:active { opacity: 0.7; }
-/* Explicit active for inline copy/action buttons */
-.kw-action-btn:active, .copy-btn-pair button:active {
-  transform: scale(0.94) !important;
-  opacity: 0.7 !important;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.4) !important;
-}
-
-/* ============================================================
-   RESET & VARIABLES
-   ============================================================ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-:root {
-  --navy: #000073;
-  --navy-dark: #00004a;
-  --sky: #00BFFF;
-  --white: #ffffff;
-  --dim: rgba(255,255,255,0.12);
-  --dim2: rgba(255,255,255,0.06);
-  --border: rgba(0,191,255,0.25);
-  --border-dim: rgba(255,255,255,0.08);
-  --text: #ffffff;
-  --text-mid: rgba(255,255,255,0.5);
-  --text-dim: rgba(255,255,255,0.35);
-  --red: #ff0000;
-  --green: #00cc44;
-  --gold: #FFD700;
-  --pink: #F3ABB6;
-  --purple: #E0B0FF;
-  --grey-text: #D0D2CF;
-}
-
-html, body {
-  font-family: 'Crimson Pro', Georgia, serif;
-  background: var(--navy);
-  color: var(--text);
-  min-height: 100dvh;
-  overflow-x: hidden;
-  font-size: 16px;
-}
-
-/* ============================================================
-   SCREEN SYSTEM
-   ============================================================ */
-.screen {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100dvh;
-  padding: 0 20px 60px;
-  background: radial-gradient(ellipse at 50% 20%, rgba(0,191,255,0.12) 0%, transparent 65%),
-              linear-gradient(180deg, var(--navy) 0%, var(--navy-dark) 100%);
-  animation: fadeIn 0.35s ease;
-}
-.screen.active { display: flex; }
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes verifyPulse {
-  0%,100% { opacity:0.7; transform:scale(1); filter:drop-shadow(0 0 14px rgba(0,191,255,0.5)); }
-  50%      { opacity:1;   transform:scale(1.08); filter:drop-shadow(0 0 28px rgba(0,191,255,0.9)); }
-}
-#verify-text::after {
-  content:'';
-  animation: dotsAnim 1.2s steps(4,end) infinite;
-}
-@keyframes dotsAnim {
-  0%  { content:''; }
-  25% { content:'.'; }
-  50% { content:'..'; }
-  75% { content:'...'; }
-}
-
-/* ============================================================
-   SHARED COMPONENTS
-   ============================================================ */
-.site-label {
-  font-family: 'Cinzel', serif;
-  font-size: 13px;
-  letter-spacing: 0.2em;
-  color: rgba(255,255,255,0.4);
-  margin: 32px 0 20px;
-  text-align: center;
-}
-
-.logo-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 12px;
-}
-.logo-wrap img {
-  width: 80px;
-  height: 80px;
-  object-fit: contain;
-  margin-bottom: 14px;
-  filter: drop-shadow(0 0 18px rgba(0,191,255,0.5));
-}
-.logo-title {
-  font-family: 'Cinzel', serif;
-  font-size: 22px;
-  letter-spacing: 0.2em;
-  color: var(--sky);
-  font-weight: 600;
-}
-.logo-sub {
-  font-family: 'Cinzel', serif;
-  font-size: 12px;
-  letter-spacing: 0.15em;
-  color: rgba(255,255,255,0.4);
-  margin-top: 8px;
-  text-align: center;
-}
-
-.screen-title {
-  font-family: 'Cinzel', serif;
-  font-size: 14px;
-  letter-spacing: 0.15em;
-  color: rgba(255,255,255,0.7);
-  text-transform: uppercase;
-  text-align: center;
-  margin-bottom: 28px;
-}
-
-/* CARDS */
-.cards {
-  width: 100%;
-  max-width: 420px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.card {
-  background: var(--dim);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  cursor: pointer;
-  transition: background 0.25s, border-color 0.25s, transform 0.15s;
-  -webkit-user-select: none;
-  user-select: none;
-  text-decoration: none;
-  color: inherit;
-}
-.card:active { transform: scale(0.97); background: rgba(0,191,255,0.12); border-color: var(--sky); }
-.card.grayed { opacity: 0.35; pointer-events: none; }
-.card.external { cursor: pointer; }
-
-.card-icon {
-  width: 48px;
-  flex-shrink: 0;
-  text-align: center;
-}
-.card-icon img {
-  width: 42px;
-  height: 42px;
-  object-fit: contain;
-  display: block;
-  margin: 0 auto;
-}
-.card-text { flex: 1; }
-.card-title {
-  font-family: 'Cinzel', serif;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--sky);
-  margin-bottom: 3px;
-}
-.card-desc { font-size: 13px; color: rgba(255,255,255,0.5); }
-.card-desc2 { font-size: 12px; color: var(--sky); margin-top: 4px; opacity: 0.7; }
-.card-arrow { color: var(--sky); font-size: 20px; flex-shrink: 0; }
-
-/* INNER SCREEN HEADER */
-.inner-header {
-  width: 100%;
-  max-width: 420px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  padding: 20px 0 16px;
-  margin-bottom: 24px;
-}
-.back-btn {
-  background: none;
-  border: none;
-  color: var(--sky);
-  font-size: 26px;
-  cursor: pointer;
-  padding: 0 6px 0 0;
-  flex-shrink: 0;
-  line-height: 1;
-}
-.inner-title {
-  font-family: 'Cinzel', serif;
-  font-size: 14px;
-  letter-spacing: 0.15em;
-  color: rgba(255,255,255,0.7);
-  text-transform: uppercase;
-  flex: 1;
-}
-
-.section-divider {
-  width: 100%;
-  max-width: 420px;
-  height: 1px;
-  background: rgba(255,255,255,0.08);
-  margin: 8px 0;
-}
-
-.btn-primary {
-  width: 75%;
-  height: 56px;
-  border-radius: 12px;
-  background: var(--sky);
-  color: var(--navy);
-  border: none;
-  font-family: 'Cinzel', serif;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
-}
-.btn-primary:hover { opacity: 0.9; }
-.btn-primary:active { transform: scale(0.98); opacity: 0.8; }
-.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-
-.btn-secondary {
-  width: 75%;
-  padding: 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(0,191,255,0.3);
-  background: transparent;
-  color: rgba(255,255,255,0.4);
-  font-family: 'Cinzel', serif;
-  font-size: 12px;
-  letter-spacing: 0.15em;
-  cursor: pointer;
-  margin-top: 12px;
-  transition: border-color 0.2s, color 0.2s;
-}
-.btn-secondary:hover { border-color: var(--sky); color: rgba(255,255,255,0.7); }
-
-.dropdown-wrap {
-  width: 100%;
-  max-width: 420px;
-  margin-bottom: 16px;
-}
-.dropdown-label {
-  font-family: 'Roboto', 'Crimson Pro', sans-serif;
-  font-size: 12px;
-  color: rgba(255,255,255,0.35);
-  margin-bottom: 6px;
-  display: block;
-  text-align: center;
-  letter-spacing: 0.05em;
-}
-.dropdown-wrap select, .search-input {
-  width: 100%;
-  height: 54px;
-  border-radius: 10px;
-  border: 2px solid rgba(0,191,255,0.3);
-  background: rgba(0,0,0,0.35);
-  color: var(--white);
-  font-size: 14px;
-  font-family: 'Crimson Pro', serif;
-  padding: 0 16px;
-  outline: none;
-  appearance: none;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-.dropdown-wrap select:focus, .search-input:focus { border-color: var(--sky); }
-.dropdown-wrap .chevron {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--sky);
-  pointer-events: none;
-  font-size: 14px;
-}
-.dropdown-wrap { position: relative; }
-
-.chart-result {
-  width: 100%;
-  max-width: 420px;
-  margin-top: 20px;
-  text-align: center;
-  display: none;
-}
-.chart-result.active { display: block; }
-.chart-result img {
-  width: 100%;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-}
-.chart-na {
-  padding: 40px;
-  background: var(--dim2);
-  border: 1px solid var(--border-dim);
-  border-radius: 12px;
-  color: var(--text-mid);
-  font-family: 'Cinzel', serif;
-  font-size: 13px;
-  letter-spacing: 0.1em;
-}
-
-#screen-B0-login .id-input {
-  width: 100%;
-  max-width: 420px;
-  padding: 14px 16px;
-  border: 2px solid rgba(0,191,255,0.3);
-  border-radius: 12px;
-  font-size: 16px;
-  font-family: 'Cinzel', serif;
-  letter-spacing: 0.1em;
-  background: rgba(0,0,0,0.3);
-  color: white;
-  outline: none;
-  text-align: center;
-  text-transform: uppercase;
-  display: none;
-  margin-top: 14px;
-}
-#screen-B0-login .id-input::placeholder { color: rgba(255,255,255,0.25); }
-#screen-B0-login .id-input:focus { border-color: var(--sky); }
-
-.login-note {
-  font-size: 13px;
-  color: var(--text-mid);
-  text-align: center;
-  margin-top: 24px;
-  max-width: 320px;
-  line-height: 1.7;
-}
-
-.portal-footer {
-  margin-top: 60px;
-  width: 100%;
-  max-width: 420px;
-  padding: 16px 0;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  text-align: center;
-}
-.footer-credit {
-  font-size: 11px;
-  color: rgba(255,255,255,0.25);
-  font-style: italic;
-  line-height: 1.8;
-}
-.footer-credit strong { color: rgba(0,191,255,0.5); font-style: normal; font-weight: 400; }
-.footer-copy {
-  font-family: 'Cinzel', serif;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  color: rgba(255,255,255,0.2);
-  margin-top: 4px;
-}
-
-.red-note { color: var(--red); font-size: 13px; text-align: center; margin-top: 8px; }
-
-.coming-soon-tag {
-  font-size: 10px;
-  font-family: 'Cinzel', serif;
-  letter-spacing: 0.08em;
-  background: rgba(255,215,0,0.1);
-  border: 1px solid rgba(255,215,0,0.3);
-  color: var(--gold);
-  border-radius: 6px;
-  padding: 2px 8px;
-  margin-left: 6px;
-  vertical-align: middle;
-}
-
-/* ============================================================
-   UNIVERSAL LOADING STATE
-   ============================================================ */
-.sp-loading {
-  font-family: 'IM Fell English', serif !important;
-  font-style: italic !important;
-  font-size: 15px !important;
-  color: #ccff00 !important;
-  animation: haircutPulse 1.2s ease-in-out infinite !important;
-  text-align: center;
-}
-.sp-loading-img {
-  animation: haircutGlowBlob 1.6s ease-in-out infinite !important;
-}
-@keyframes haircutGlowBlob {
-  0%,100% { filter: drop-shadow(0 0 6px rgba(204,255,0,0.9)) drop-shadow(0 0 20px rgba(204,255,0,0.5)); transform: scale(1); }
-  50%      { filter: drop-shadow(0 0 18px rgba(204,255,0,1)) drop-shadow(0 0 40px rgba(204,255,0,0.7)); transform: scale(1.07); }
-}
-@keyframes haircutPulse {
-  0%,100% { opacity: 1; }
-  50%      { opacity: 0.3; }
-}
-
-/* ============================================================
-   B2.2 — KWANYIN
-   ============================================================ */
-#screen-B2-2-2-T2 {
-  padding-bottom: 60px;
-}
-.kwanyin-title {
-  font-family: 'Klee One', 'Ma Shan Zheng', 'KaiTi', cursive;
-  font-size: 24px;
-  font-weight: 400;
-  text-align: center;
-  letter-spacing: 0.12em;
-  color: #f5f0e8;
-  text-shadow: 0 0 4px rgba(255,245,80,0.95), 0 0 22px rgba(255,248,140,0.45), 0 0 80px rgba(255,253,210,0.08);
-  margin: 20px 0 10px;
-}
-.kwanyin-img {
-  display: block;
-  margin: 0 auto 30px;
-  max-height: 180px;
-  width: auto;
-  filter: drop-shadow(0 0 6px rgba(204,255,0,0.9)) drop-shadow(0 0 22px rgba(204,255,0,0.5)) drop-shadow(0 0 50px rgba(204,255,0,0.2));
-}
-.kw-methods {
-  display: flex;
-  gap: 12px;
-  width: 100%;
-  max-width: 420px;
-  margin-bottom: 16px;
-}
-.kw-method-card {
-  flex: 1;
-  background: #ffffff;
-  border: 1.5px solid #ffffff;
-  border-radius: 12px;
-  padding: 14px 4px;
-  cursor: pointer;
-  text-align: center;
-  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
-  min-width: 0;
-}
-.kw-method-card:hover { background: #e8e8f5; }
-.kw-method-card.active {
-  border: 2.5px solid #000073;
-  background: #e8e8f5;
-  box-shadow: 0 0 0 3px rgba(0,0,115,0.25), inset 0 2px 6px rgba(0,0,0,0.15);
-}
-.kw-method-icon { font-size: 22px; display: block; margin-bottom: 4px; }
-.kw-method-name {
-  font-family: 'IM Fell English', serif;
-  font-size: clamp(11px, 3vw, 28px);
-  font-weight: 700;
-  display: block;
-  color: #000073;
-  margin-bottom: 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.kw-method-desc { font-size: clamp(9px, 2.5vw, 14px); font-style: italic; color: #000073; }
-
-.kw-stage {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 14px;
-  padding: 24px 20px 28px;
-  text-align: center;
-  width: 100%;
-  max-width: 420px;
-}
-.kw-number {
-  font-family: 'Ma Shan Zheng', 'IM Fell English', serif;
-  font-size: 110px;
-  font-weight: 400;
-  line-height: 1;
-  min-height: 120px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #f5f0e8;
-  text-shadow: 0 0 4px rgba(255,245,80,0.95), 0 0 22px rgba(255,248,140,0.45);
-}
-.kw-number.rolling { animation: kw-flicker 0.08s infinite; }
-@keyframes kw-flicker {
-  0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; }
-}
-.kw-fate {
-  font-size: 18px;
-  font-style: italic;
-  color: #c8c0b0;
-  min-height: 26px;
-  margin-bottom: 20px;
-}
-.kw-btn {
-  font-family: 'IM Fell English', serif;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: #000073;
-  background: #fffde0;
-  border: 1.5px solid #fff9a0;
-  border-radius: 8px;
-  padding: 14px 0;
-  width: 66%;
-  cursor: pointer;
-  box-shadow: 0 0 4px rgba(255,245,80,0.95), 0 0 22px rgba(255,248,140,0.45);
-  transition: background 0.15s, transform 0.1s;
-}
-.kw-btn:hover { background: #fffaaa; }
-.kw-btn:active { transform: scale(0.98); }
-.kw-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-.kw-status { margin-top: 10px; font-size: 16px; font-style: italic; color: #a09888; min-height: 20px; }
-.kw-history {
-  width: 100%;
-  max-width: 420px;
-  margin-top: 16px;
-}
-.kw-history-title {
-  font-family: 'IM Fell English', serif;
-  font-size: 16px;
-  letter-spacing: 0.1em;
-  color: #a09888;
-  text-align: center;
-  margin-bottom: 10px;
-}
-.kw-chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-.kw-chip {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 20px;
-  padding: 5px 14px;
-  font-size: 16px;
-  color: #c8c0b0;
-}
-.kw-chip b { font-family: 'Ma Shan Zheng', serif; font-size: 18px; color: #f5f0e8; font-weight: 700; }
-.kw-chip small { font-size: 12px; opacity: 0.5; margin-left: 3px; }
-
-.kw-method-card.active {
-  border: 2.5px solid #000073;
-  background: #e8e8f5;
-  box-shadow: 0 0 0 3px rgba(0,0,115,0.3), 0 0 18px rgba(0,100,255,0.5), inset 0 2px 6px rgba(0,0,0,0.15);
-  transform: scale(1.06);
-  animation: kwMethodGlow 1.4s ease-in-out infinite alternate;
-}
-@keyframes kwMethodGlow {
-  from { box-shadow: 0 0 0 3px rgba(0,0,115,0.2), 0 0 12px rgba(0,100,255,0.35); }
-  to   { box-shadow: 0 0 0 4px rgba(0,0,115,0.4), 0 0 28px rgba(0,100,255,0.7); }
-}
-.kw-method-card:not(.active) { opacity: 0.55; transform: scale(1); }
-
-.haircut-box {
-  width: 100%;
-  max-width: 420px;
-  border: 1px solid rgba(0,191,255,0.2);
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 20px;
-  background: var(--dim2);
-}
-.haircut-date-input {
-  width: 100%;
-  height: 46px;
-  border-radius: 8px;
-  border: 1px solid rgba(0,191,255,0.3);
-  background: rgba(0,0,0,0.35);
-  color: white;
-  font-size: 14px;
-  padding: 0 14px;
-  outline: none;
-  margin-bottom: 12px;
-}
-.haircut-date-input:focus { border-color: var(--sky); }
-
-/* ── GYO Standalone overrides ── */
-.screen:not(.active) { display: none; }
-.screen.active { display: flex; }
-
-#screen-gyo-login {
-  background: linear-gradient(180deg, #000073 0%, #00004a 100%);
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 24px;
-  text-align: center;
-}
-</style>
 </head>
 <body>
 
@@ -1501,13 +834,25 @@ html, body {
   </div>
 </div>
 
-<!-- SPGo Shared Core Scripts -->
 <script src="https://spgo5.github.io/Go5.SHARED/spgo-core.js"></script>
-
 <script>
-// ── GYO navigation overrides (defined after spgo-core.js to take precedence) ──
-const GOOGLE_CLIENT_ID = '427989206862-svhf1cote22nhdhkq68ff14446upp2m4.apps.googleusercontent.com';
+// ================================================================
+// 🔮 GYO — Guanyin Oracle Standalone · Divination (i) Tsutsuji
+// ================================================================
 
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzA4RwYNLcv60HWAHOh2gQgeCfuOWAb0kyqP7BaiujKI5hylDQKEc4Cu6QtTs77PA7FnQ/exec';
+const GOOGLE_CLIENT_ID = '427989206862-svhf1cote22nhdhkq68ff14446upp2m4.apps.googleusercontent.com';
+const PROFILE_PIC_BASE = 'https://raw.githubusercontent.com/SPGo5/Go5/main/Profile%20Pix/';
+
+let currentUser = null;
+let currentUserName = 'Guest';
+let currentFsSubscriber = false;
+let currentHasPortal = false;
+let currentHasBara = false;
+let currentTier = 0;
+let isGuest = false;
+
+// ── Screen navigation ──
 function goTo(screenId) {
   document.querySelectorAll('.screen').forEach(s => {
     s.classList.remove('active');
@@ -1517,19 +862,48 @@ function goTo(screenId) {
   if (el) { el.style.display = 'flex'; el.classList.add('active'); window.scrollTo(0, 0); }
   if (screenId === 'screen-B2-2-2-T2') resetKwanyin();
 }
+function goBack() {}
 
+// ── JSONP helper ──
+function gasJsonp(params, onSuccess, onError, timeoutMs) {
+  const cbName = 'gasCB_' + Date.now() + '_' + Math.floor(Math.random()*9999);
+  const script = document.createElement('script');
+  const timer = setTimeout(() => { cleanup(); if (onError) onError('Timeout'); }, timeoutMs || 15000);
+  function cleanup() { clearTimeout(timer); delete window[cbName]; if (script.parentNode) script.parentNode.removeChild(script); }
+  window[cbName] = function(data) { cleanup(); onSuccess(data); };
+  script.onerror = function() { cleanup(); if (onError) onError('Script load failed'); };
+  document.head.appendChild(script);
+  script.src = GAS_URL + '?' + params + '&callback=' + cbName;
+}
+
+// ── Login error display ──
 function showLoginError(msg) {
   const el = document.getElementById('login-error-gyo');
   if (el) { el.textContent = msg; el.style.display = 'block'; }
   goTo('screen-gyo-login');
 }
 
-function setHomeState() {
-  goTo('screen-B2-2-2-splash');
-  updateProfileCorner();
-  applyTierGating();
+// ── Verifying screen ──
+function showVerifying() {
+  goTo('screen-gyo-verify');
 }
 
+// ── Start Google login ──
+function startGoogleLogin() {
+  const el = document.getElementById('login-error-gyo');
+  if (el) el.style.display = 'none';
+  const redirectUri = window.location.origin + '/Go5.GYO/index.html';
+  const params = new URLSearchParams({
+    client_id: GOOGLE_CLIENT_ID,
+    redirect_uri: redirectUri,
+    response_type: 'token',
+    scope: 'email profile',
+    prompt: 'select_account'
+  });
+  window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
+}
+
+// ── Validate token with Google then GAS ──
 async function validateWithToken(token) {
   showVerifying();
   try {
@@ -1570,6 +944,7 @@ async function validateWithToken(token) {
   }
 }
 
+// ── Check OAuth token or saved session on load ──
 function checkOAuthReturn() {
   const hash = window.location.hash;
   if (hash && hash.includes('access_token')) {
@@ -1605,22 +980,36 @@ function checkOAuthReturn() {
   goTo('screen-gyo-login');
 }
 
-function guestLogin() {}
+// ── Set home state: go to GYO splash ──
+function setHomeState() {
+  goTo('screen-B2-2-2-splash');
+  updateProfileCorner();
+  applyTierGating();
+}
 
-function gyoEnter() { goTo('screen-B2-2-2-T2'); }
+// ── Profile corner ──
+function updateProfileCorner() {
+  const corner = document.getElementById('profile-corner');
+  const img = document.getElementById('profile-corner-img');
+  const code = document.getElementById('profile-corner-code');
+  if (!corner) return;
+  if (!currentUser) { corner.style.display = 'none'; return; }
+  corner.style.display = 'flex';
+  const tierLabel = currentTier === 1 ? 'Tier 1 💎' : currentTier === 2 ? 'Tier 2' : currentTier === 3 ? 'Tier 3' : '';
+  code.innerHTML = currentUser + (tierLabel ? '<br><span style="font-size:8px;color:rgba(0,191,255,0.6);">' + tierLabel + '</span>' : '');
+  const picUrl = PROFILE_PIC_BASE + encodeURIComponent(currentUser) + '-Profile-Pic-R.png';
+  if (img) {
+    img.onerror = function() { img.src = ''; img.style.display = 'none'; };
+    img.onload = function() { img.style.display = 'block'; };
+    img.src = picUrl;
+  }
+}
 
-function startGoogleLogin() {
-  const el = document.getElementById('login-error-gyo');
-  if (el) el.style.display = 'none';
-  const redirectUri = window.location.origin + '/Go5.GYO/index.html';
-  const params = new URLSearchParams({
-    client_id: GOOGLE_CLIENT_ID,
-    redirect_uri: redirectUri,
-    response_type: 'token',
-    scope: 'email profile',
-    prompt: 'select_account'
-  });
-  window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
+// ── Logout ──
+function toggleLogoutPopup() {
+  const popup = document.getElementById('logout-popup');
+  if (!popup) return;
+  popup.style.display = popup.style.display === 'flex' ? 'none' : 'flex';
 }
 
 function doLogout() {
@@ -1634,8 +1023,87 @@ function doLogout() {
   goTo('screen-gyo-login');
 }
 
-// ── GYO Portal JS ──
-function kwDraw() {
+// ── Tier gating ──
+function applyTierGating() {
+  const linkEl = document.getElementById('kw-lot-link');
+  const noteEl = document.getElementById('kw-tier-note');
+  const canSeeLink = !isGuest && (currentTier === 1 || currentTier === 2);
+  if (linkEl) { linkEl.style.pointerEvents = canSeeLink ? 'auto' : 'none'; linkEl.style.opacity = canSeeLink ? '1' : '0.3'; }
+  if (noteEl) noteEl.style.display = canSeeLink ? 'none' : 'block';
+}
+
+function applyFsSubscriberGating() {}
+function guestLogin() {}
+function showIdInput() {}
+function loginWithId() {}
+function handleGoogleLogin() {}
+function initGoogleAuth() {}
+function getTimeGreeting() { const h = new Date().getHours(); return h<12?'Good morning':h<17?'Good afternoon':h<21?'Good evening':'Good night'; }
+
+// ── GYO navigation ──
+function gyoEnter() { goTo('screen-B2-2-2-T2'); }
+
+// ================================================================
+// GYO — Kwanyin Oracle Logic
+// ================================================================
+let kwSelectedMethod = 'quantum';
+let kwIsDrawing = false;
+let kwLastNumber = null;
+let kwLastSource = null;
+let kwResultDateTime = '';
+
+function kwRetryQuantum() {
+  const popup = document.getElementById('kw-unreachable-popup');
+  if (popup) popup.style.display = 'none';
+  kwDraw();
+}
+
+function kwSwitchTo(method) {
+  const popup = document.getElementById('kw-unreachable-popup');
+  if (popup) popup.style.display = 'none';
+  kwSelectMethod(method);
+  kwDraw();
+}
+
+function kwSelectMethod(m) {
+  kwSelectedMethod = m;
+  document.querySelectorAll('.kw-method-card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById('kw-card-' + m);
+  if (card) card.classList.add('active');
+}
+
+function resetKwanyin() {
+  kwLastNumber = null; kwLastSource = null; kwResultDateTime = '';
+  const popup = document.getElementById('kw-unreachable-popup');
+  if (popup) popup.style.display = 'none';
+  const numEl = document.getElementById('kw-number'); if (numEl) numEl.textContent = '—';
+  const fateEl = document.getElementById('kw-fate'); if (fateEl) fateEl.textContent = '';
+  const statusEl = document.getElementById('kw-status'); if (statusEl) statusEl.textContent = '';
+  const qEl = document.getElementById('kw-question'); if (qEl) qEl.value = '';
+  const printBtn = document.getElementById('kw-print-btn'); if (printBtn) printBtn.style.display = 'none';
+  const btn = document.getElementById('kw-btn'); if (btn) { btn.disabled = false; btn.textContent = 'Draw a lot'; }
+  kwSelectedMethod = 'quantum'; kwIsDrawing = false;
+  document.querySelectorAll('.kw-method-card').forEach(c => c.classList.remove('active'));
+  const qCard = document.getElementById('kw-card-quantum'); if (qCard) qCard.classList.add('active');
+  const mv = document.getElementById('kw-main-view'); if (mv) mv.style.display = 'flex';
+  const rv = document.getElementById('kw-result-view'); if (rv) rv.style.display = 'none';
+}
+
+async function quantumFetchN(max) {
+  const r = await fetch('https://qrng.anu.edu.au/API/jsonI.php?length=1&type=uint16');
+  const j = await r.json();
+  return (j.data[0] % max) + 1;
+}
+async function randomOrgFetchN(max) {
+  const r = await fetch('https://www.random.org/integers/?num=1&min=1&max=' + max + '&col=1&base=10&format=plain&rnd=new');
+  return parseInt(await r.text());
+}
+function cryptoRandN(max) {
+  const arr = new Uint32Array(1); crypto.getRandomValues(arr);
+  return (arr[0] % max) + 1;
+}
+
+async function kwDraw() {
   if (kwIsDrawing) return;
   kwIsDrawing = true;
   const btn = document.getElementById('kw-btn');
@@ -1916,7 +1384,7 @@ if (document.readyState === 'loading') {
 } else {
   checkOAuthReturn();
 }
-</script>
 
+</script>
 </body>
 </html>
