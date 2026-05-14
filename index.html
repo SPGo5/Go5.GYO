@@ -840,15 +840,7 @@ html, body {
 // 🔮 GYO — Guanyin Oracle Standalone · Divination (i) Tsutsuji
 // ================================================================
 
-const PROFILE_PIC_BASE = 'https://raw.githubusercontent.com/SPGo5/Go5/main/Profile%20Pix/';
 
-let currentUser = null;
-let currentUserName = 'Guest';
-let currentFsSubscriber = false;
-let currentHasPortal = false;
-let currentHasBara = false;
-let currentTier = 0;
-let isGuest = false;
 
 // ── Screen navigation ──
 function goTo(screenId) {
@@ -1044,8 +1036,6 @@ function gyoEnter() { goTo('screen-B2-2-2-T2'); }
 // ================================================================
 // GYO — Kwanyin Oracle Logic
 // ================================================================
-let kwSelectedMethod = 'quantum';
-let kwIsDrawing = false;
 let kwLastNumber = null;
 let kwLastSource = null;
 let kwResultDateTime = '';
