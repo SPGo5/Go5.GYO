@@ -1391,9 +1391,13 @@ document.addEventListener('click', function(e) {
 });
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', checkOAuthReturn);
+  document.addEventListener('DOMContentLoaded', function() {
+    checkOAuthReturn();
+    gasJsonp('action=ping&stat=visits_gyo', function() {}, function() {});
+  });
 } else {
   checkOAuthReturn();
+  gasJsonp('action=ping&stat=visits_gyo', function() {}, function() {});
 }
 
 </script>
