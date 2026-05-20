@@ -1,3 +1,27 @@
+<!--
+  ════════════════════════════════════════════════════════════
+  SPGo PORTAL — DESIGN SYSTEM RULES FOR CLAUDE
+  ════════════════════════════════════════════════════════════
+  This portal is part of the SPGo design system.
+  All shared design tokens (colours, fonts, button styles,
+  card types, header, footer) are defined in:
+    https://spgo5.github.io/Go5.SHARED/spgo-core.css
+    https://spgo5.github.io/Go5.SHARED/spgo-core.js
+
+  RULES:
+  1. NEVER redefine .card-hub, .card-portal, .card-ext,
+     .card-tool, .card-screen, or .card-alias locally.
+     Edit spgo-core.css instead.
+  2. NEVER redefine .portal-footer, .footer-credit,
+     or .footer-copy locally. Footer is shared.
+  3. NEVER redefine .inner-header locally.
+  4. To change any button colour, font, or style globally,
+     edit the CSS variable in spgo-core.css :root block.
+  5. Portal-specific CSS (e.g. map, chart viewer) is
+     allowed in the local <style> block only if it does
+     not override any shared token or class.
+  ════════════════════════════════════════════════════════════
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,70 +33,31 @@
   <link rel="alternate" type="application/json+oembed" href="https://SPGo5.github.io/Go5.GYO/oembed.json" title="觀音靈簽 GYO · Divination (i) Tsutsuji">
   <meta property="og:title" content="🔮 觀音靈簽 GYO · Guanyin Oracle">
   <meta property="og:description" content="Divination (i) Tsutsuji — Guanyin Oracle">
-  <meta property="og:image" content="https://i.postimg.cc/cLc0dSD1/Kwan-Yin.png">
+  <meta property="og:image" content="https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png">
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" href="https://i.postimg.cc/Wb0KsPF7/Lladro-Guan-Yin-64x64-for-avatar-icon.png">
-  <link rel="apple-touch-icon" href="https://i.postimg.cc/CK7JtjmC/Lladro-GYGlow-Green-Med.png">
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/ZnhmggH0/Tsutsuji-Portal-logo-051926-Square.png">
+  <link rel="apple-touch-icon" href="https://i.postimg.cc/ZnhmggH0/Tsutsuji-Portal-logo-051926-Square.png">
 
   <link rel="stylesheet" href="https://spgo5.github.io/Go5.SHARED/spgo-core.css">
 <style>
 
-/* Global touch feedback — every button gets a press feel */
+/* ── GYO Portal-specific CSS only ── */
+
+/* Touch feedback */
 button:active, a.card:active, [onclick]:active {
   opacity: 0.75 !important;
   transform: scale(0.96) !important;
   transition: opacity 0.08s, transform 0.08s !important;
 }
 
-/* Profile pic top-right */
-#profile-corner {
-  position: fixed;
-  top: 12px;
-  right: 14px;
-  z-index: 9999;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-#profile-corner img {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid rgba(0,191,255,0.5);
-  box-shadow: 0 0 10px rgba(0,191,255,0.3);
-}
-#profile-corner-code {
-  font-family: 'Cinzel', serif;
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  color: rgba(0,191,255,0.7);
-  margin-top: 3px;
-  max-width: 50px;
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+/* Explicit active for inline action buttons */
+.kw-action-btn:active, .copy-btn-pair button:active {
+  transform: scale(0.94) !important;
+  opacity: 0.7 !important;
+  box-shadow: inset 0 2px 6px rgba(0,0,0,0.4) !important;
 }
 
-/* Logout popup */
-#logout-popup {
-  position: fixed;
-  top: 60px;
-  right: 10px;
-  z-index: 9999;
-  background: rgba(0,0,60,0.97);
-  border: 1px solid rgba(0,191,255,0.35);
-  border-radius: 12px;
-  padding: 14px 18px;
-  display: none;
-  flex-direction: column;
-  gap: 10px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-  min-width: 160px;
-}
+/* Logout popup button overrides */
 #logout-popup button {
   background: none;
   border: 1px solid rgba(255,80,80,0.5);
@@ -85,419 +70,166 @@ button:active, a.card:active, [onclick]:active {
   cursor: pointer;
   text-align: left;
 }
-#logout-popup button:active { opacity: 0.7; }
-/* Explicit active for inline copy/action buttons */
-.kw-action-btn:active, .copy-btn-pair button:active {
-  transform: scale(0.94) !important;
-  opacity: 0.7 !important;
-  box-shadow: inset 0 2px 6px rgba(0,0,0,0.4) !important;
+#logout-popup button.btn-blue {
+  border-color: rgba(0,191,255,0.4);
+  color: rgba(0,191,255,0.85);
 }
 
-/* ============================================================
-   RESET & VARIABLES
-   ============================================================ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-
-:root {
-  --navy: #000073;
-  --navy-dark: #00004a;
-  --sky: #00BFFF;
-  --white: #ffffff;
-  --dim: rgba(255,255,255,0.12);
-  --dim2: rgba(255,255,255,0.06);
-  --border: rgba(0,191,255,0.25);
-  --border-dim: rgba(255,255,255,0.08);
-  --text: #ffffff;
-  --text-mid: rgba(255,255,255,0.5);
-  --text-dim: rgba(255,255,255,0.35);
-  --red: #ff0000;
-  --green: #00cc44;
-  --gold: #FFD700;
-  --pink: #F3ABB6;
-  --purple: #E0B0FF;
-  --grey-text: #D0D2CF;
-}
-
-html, body {
-  font-family: 'Crimson Pro', Georgia, serif;
-  background: var(--navy);
-  color: var(--text);
+/* ── GYO Login screen ── */
+#screen-gyo-login {
+  background: linear-gradient(180deg, #000073 0%, #00004a 100%);
   min-height: 100dvh;
-  overflow-x: hidden;
-  font-size: 16px;
-}
-
-/* ============================================================
-   SCREEN SYSTEM
-   ============================================================ */
-.screen {
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100dvh;
-  padding: 0 20px 60px;
-  background: radial-gradient(ellipse at 50% 20%, rgba(0,191,255,0.12) 0%, transparent 65%),
-              linear-gradient(180deg, var(--navy) 0%, var(--navy-dark) 100%);
-  animation: fadeIn 0.35s ease;
-}
-.screen.active { display: flex; }
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes verifyPulse {
-  0%,100% { opacity:0.7; transform:scale(1); filter:drop-shadow(0 0 14px rgba(0,191,255,0.5)); }
-  50%      { opacity:1;   transform:scale(1.08); filter:drop-shadow(0 0 28px rgba(0,191,255,0.9)); }
-}
-#verify-text::after {
-  content:'';
-  animation: dotsAnim 1.2s steps(4,end) infinite;
-}
-@keyframes dotsAnim {
-  0%  { content:''; }
-  25% { content:'.'; }
-  50% { content:'..'; }
-  75% { content:'...'; }
-}
-
-/* ============================================================
-   SHARED COMPONENTS
-   ============================================================ */
-.site-label {
-  font-family: 'Cinzel', serif;
-  font-size: 13px;
-  letter-spacing: 0.2em;
-  color: rgba(255,255,255,0.4);
-  margin: 32px 0 20px;
-  text-align: center;
-}
-
-.logo-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 12px;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
 }
-.logo-wrap img {
-  width: 80px;
-  height: 80px;
+
+/* ── GYO Menu screen ── */
+#screen-gyo-menu {
+  padding-top: 60px;
+}
+.gyo-menu-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 32px;
+}
+.gyo-menu-logo img {
+  width: 90px;
+  height: 90px;
   object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(204,255,0,0.7)) drop-shadow(0 0 28px rgba(204,255,0,0.4));
   margin-bottom: 14px;
-  filter: drop-shadow(0 0 18px rgba(0,191,255,0.5));
 }
-.logo-title {
+.gyo-menu-logo-title {
+  font-family: 'Klee One', 'Ma Shan Zheng', cursive;
+  font-size: 28px;
+  color: #f5f0e8;
+  text-shadow: 0 0 8px rgba(255,245,80,0.8);
+  margin-bottom: 4px;
+}
+.gyo-menu-logo-sub {
   font-family: 'Cinzel', serif;
-  font-size: 22px;
+  font-size: 11px;
+  color: #e0b0ff;
   letter-spacing: 0.2em;
-  color: var(--sky);
-  font-weight: 600;
 }
-.logo-sub {
-  font-family: 'Cinzel', serif;
-  font-size: 12px;
-  letter-spacing: 0.15em;
-  color: rgba(255,255,255,0.4);
-  margin-top: 8px;
+
+/* ── History screen ── */
+#screen-gyo-history { padding-top: 0; }
+.hist-privacy-note {
+  font-family: 'Crimson Pro', serif;
+  font-size: 13px;
+  color: #ff6666;
   text-align: center;
+  margin-bottom: 18px;
+  max-width: 380px;
 }
-
-.screen-title {
+.hist-slot {
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid rgba(0,191,255,0.22);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  background: rgba(255,255,255,0.05);
+  transition: opacity 0.3s;
+}
+.hist-slot.empty {
+  opacity: 0.3;
+  pointer-events: none;
+  border-style: dashed;
+  border-color: rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.02);
+}
+.hist-slot-num {
   font-family: 'Cinzel', serif;
-  font-size: 14px;
+  font-size: 10px;
   letter-spacing: 0.15em;
-  color: rgba(255,255,255,0.7);
-  text-transform: uppercase;
-  text-align: center;
-  margin-bottom: 28px;
-}
-
-/* CARDS */
-.cards {
-  width: 100%;
-  max-width: 420px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.card {
-  background: var(--dim);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 10px 14px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  cursor: pointer;
-  transition: background 0.25s, border-color 0.25s, transform 0.15s;
-  -webkit-user-select: none;
-  user-select: none;
-  text-decoration: none;
-  color: inherit;
-}
-.card:active { transform: scale(0.97); background: rgba(0,191,255,0.12); border-color: var(--sky); }
-.card.grayed { opacity: 0.35; pointer-events: none; }
-.card.external { cursor: pointer; }
-
-.card-icon {
-  width: 48px;
-  flex-shrink: 0;
-  text-align: center;
-}
-.card-icon img {
-  width: 42px;
-  height: 42px;
-  object-fit: contain;
-  display: block;
-  margin: 0 auto;
-}
-.card-text { flex: 1; }
-.card-title {
-  font-family: 'Cinzel', serif;
-  font-size: 14px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  color: var(--sky);
-  margin-bottom: 3px;
-}
-.card-desc { font-size: 13px; color: rgba(255,255,255,0.5); }
-.card-desc2 { font-size: 12px; color: var(--sky); margin-top: 4px; opacity: 0.7; }
-.card-arrow { color: var(--sky); font-size: 20px; flex-shrink: 0; }
-
-/* INNER SCREEN HEADER */
-.inner-header {
-  width: 100%;
-  max-width: 420px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  padding: 20px 0 16px;
-  margin-bottom: 24px;
-}
-.back-btn {
-  background: none;
-  border: none;
-  color: var(--sky);
-  font-size: 26px;
-  cursor: pointer;
-  padding: 0 6px 0 0;
-  flex-shrink: 0;
-  line-height: 1;
-}
-.inner-title {
-  font-family: 'Cinzel', serif;
-  font-size: 14px;
-  letter-spacing: 0.15em;
-  color: rgba(255,255,255,0.7);
-  text-transform: uppercase;
-  flex: 1;
-}
-
-.section-divider {
-  width: 100%;
-  max-width: 420px;
-  height: 1px;
-  background: rgba(255,255,255,0.08);
-  margin: 8px 0;
-}
-
-.btn-primary {
-  width: 75%;
-  height: 56px;
-  border-radius: 12px;
-  background: var(--sky);
-  color: var(--navy);
-  border: none;
-  font-family: 'Cinzel', serif;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
-}
-.btn-primary:hover { opacity: 0.9; }
-.btn-primary:active { transform: scale(0.98); opacity: 0.8; }
-.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-
-.btn-secondary {
-  width: 75%;
-  padding: 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(0,191,255,0.3);
-  background: transparent;
-  color: rgba(255,255,255,0.4);
-  font-family: 'Cinzel', serif;
-  font-size: 12px;
-  letter-spacing: 0.15em;
-  cursor: pointer;
-  margin-top: 12px;
-  transition: border-color 0.2s, color 0.2s;
-}
-.btn-secondary:hover { border-color: var(--sky); color: rgba(255,255,255,0.7); }
-
-.dropdown-wrap {
-  width: 100%;
-  max-width: 420px;
-  margin-bottom: 16px;
-}
-.dropdown-label {
-  font-family: 'Roboto', 'Crimson Pro', sans-serif;
-  font-size: 12px;
   color: rgba(255,255,255,0.35);
   margin-bottom: 6px;
-  display: block;
-  text-align: center;
-  letter-spacing: 0.05em;
-}
-.dropdown-wrap select, .search-input {
-  width: 100%;
-  height: 54px;
-  border-radius: 10px;
-  border: 2px solid rgba(0,191,255,0.3);
-  background: rgba(0,0,0,0.35);
-  color: var(--white);
-  font-size: 14px;
-  font-family: 'Crimson Pro', serif;
-  padding: 0 16px;
-  outline: none;
-  appearance: none;
-  cursor: pointer;
-  transition: border-color 0.2s;
-}
-.dropdown-wrap select:focus, .search-input:focus { border-color: var(--sky); }
-.dropdown-wrap .chevron {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--sky);
-  pointer-events: none;
-  font-size: 14px;
-}
-.dropdown-wrap { position: relative; }
-
-.chart-result {
-  width: 100%;
-  max-width: 420px;
-  margin-top: 20px;
-  text-align: center;
-  display: none;
-}
-.chart-result.active { display: block; }
-.chart-result img {
-  width: 100%;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-}
-.chart-na {
-  padding: 40px;
-  background: var(--dim2);
-  border: 1px solid var(--border-dim);
-  border-radius: 12px;
-  color: var(--text-mid);
-  font-family: 'Cinzel', serif;
-  font-size: 13px;
-  letter-spacing: 0.1em;
-}
-
-#screen-B0-login .id-input {
-  width: 100%;
-  max-width: 420px;
-  padding: 14px 16px;
-  border: 2px solid rgba(0,191,255,0.3);
-  border-radius: 12px;
-  font-size: 16px;
-  font-family: 'Cinzel', serif;
-  letter-spacing: 0.1em;
-  background: rgba(0,0,0,0.3);
-  color: white;
-  outline: none;
-  text-align: center;
   text-transform: uppercase;
-  display: none;
-  margin-top: 14px;
 }
-#screen-B0-login .id-input::placeholder { color: rgba(255,255,255,0.25); }
-#screen-B0-login .id-input:focus { border-color: var(--sky); }
-
-.login-note {
-  font-size: 13px;
-  color: var(--text-mid);
-  text-align: center;
-  margin-top: 24px;
-  max-width: 320px;
-  line-height: 1.7;
+.hist-slot-lot {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 36px;
+  font-weight: 700;
+  color: #ccff00;
+  line-height: 1;
+  text-shadow: 0 0 8px rgba(204,255,0,0.8);
+  display: inline-block;
+  margin-right: 10px;
 }
-
-.portal-footer {
-  margin-top: 60px;
-  width: 100%;
-  max-width: 420px;
-  padding: 16px 0;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  text-align: center;
-}
-.footer-credit {
-  font-size: 11px;
-  color: rgba(255,255,255,0.25);
-  font-style: italic;
-  line-height: 1.8;
-}
-.footer-credit strong { color: rgba(0,191,255,0.5); font-style: normal; font-weight: 400; }
-.footer-copy {
+.hist-slot-date {
   font-family: 'Cinzel', serif;
   font-size: 10px;
-  letter-spacing: 0.1em;
-  color: rgba(255,255,255,0.2);
-  margin-top: 4px;
-}
-
-.red-note { color: var(--red); font-size: 13px; text-align: center; margin-top: 8px; }
-
-.coming-soon-tag {
-  font-size: 10px;
-  font-family: 'Cinzel', serif;
+  color: rgba(255,245,220,0.45);
   letter-spacing: 0.08em;
-  background: rgba(255,215,0,0.1);
-  border: 1px solid rgba(255,215,0,0.3);
-  color: var(--gold);
-  border-radius: 6px;
-  padding: 2px 8px;
-  margin-left: 6px;
   vertical-align: middle;
 }
-
-/* ============================================================
-   UNIVERSAL LOADING STATE
-   ============================================================ */
-.sp-loading {
-  font-family: 'IM Fell English', serif !important;
-  font-style: italic !important;
-  font-size: 15px !important;
-  color: #ccff00 !important;
-  animation: haircutPulse 1.2s ease-in-out infinite !important;
+.hist-slot-q {
+  font-family: 'Corinthia', cursive;
+  font-size: 20px;
+  color: #00E5FF;
+  margin: 6px 0 10px;
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+.hist-slot-empty-label {
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+  letter-spacing: 0.12em;
   text-align: center;
+  padding: 12px 0;
 }
-.sp-loading-img {
-  animation: haircutGlowBlob 1.6s ease-in-out infinite !important;
+.hist-slot-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
 }
-@keyframes haircutGlowBlob {
-  0%,100% { filter: drop-shadow(0 0 6px rgba(204,255,0,0.9)) drop-shadow(0 0 20px rgba(204,255,0,0.5)); transform: scale(1); }
-  50%      { filter: drop-shadow(0 0 18px rgba(204,255,0,1)) drop-shadow(0 0 40px rgba(204,255,0,0.7)); transform: scale(1.07); }
+.hist-slot-actions button {
+  flex: 1;
+  padding: 9px 4px;
+  border-radius: 8px;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.8);
+  transition: background 0.2s, border-color 0.2s;
 }
-@keyframes haircutPulse {
-  0%,100% { opacity: 1; }
-  50%      { opacity: 0.3; }
+.hist-slot-actions button:active { opacity: 0.7; transform: scale(0.97); }
+.hist-slot-actions .btn-regen { border-color: rgba(0,191,255,0.4); color: #00BFFF; }
+.hist-slot-actions .btn-copy-img { border-color: rgba(255,255,255,0.3); }
+.hist-slot-actions .btn-del { border-color: rgba(255,80,80,0.35); color: rgba(255,130,130,0.8); }
+.hist-replace-warn {
+  font-family: 'Crimson Pro', serif;
+  font-size: 12px;
+  color: #ff6666;
+  text-align: center;
+  margin: 4px 0 8px;
 }
 
-/* ============================================================
-   B2.2 — KWANYIN
-   ============================================================ */
-#screen-B2-2-2-T2 {
-  padding-bottom: 60px;
+/* ── Lots Directory screen ── */
+#screen-gyo-directory { padding: 0; }
+#gyo-dir-iframe {
+  width: 100%;
+  border: none;
+  flex: 1;
+  min-height: 100dvh;
 }
+
+/* ── GYO Oracle / Draw screen ── */
+#screen-B2-2-2-T2 { padding-bottom: 60px; }
 .kwanyin-title {
   font-family: 'Klee One', 'Ma Shan Zheng', 'KaiTi', cursive;
   font-size: 24px;
@@ -537,8 +269,15 @@ html, body {
 .kw-method-card.active {
   border: 2.5px solid #000073;
   background: #e8e8f5;
-  box-shadow: 0 0 0 3px rgba(0,0,115,0.25), inset 0 2px 6px rgba(0,0,0,0.15);
+  box-shadow: 0 0 0 3px rgba(0,0,115,0.3), 0 0 18px rgba(0,100,255,0.5), inset 0 2px 6px rgba(0,0,0,0.15);
+  transform: scale(1.06);
+  animation: kwMethodGlow 1.4s ease-in-out infinite alternate;
 }
+@keyframes kwMethodGlow {
+  from { box-shadow: 0 0 0 3px rgba(0,0,115,0.2), 0 0 12px rgba(0,100,255,0.35); }
+  to   { box-shadow: 0 0 0 4px rgba(0,0,115,0.4), 0 0 28px rgba(0,100,255,0.7); }
+}
+.kw-method-card:not(.active) { opacity: 0.55; transform: scale(1); }
 .kw-method-icon { font-size: 22px; display: block; margin-bottom: 4px; }
 .kw-method-name {
   font-family: 'IM Fell English', serif;
@@ -578,13 +317,7 @@ html, body {
 @keyframes kw-flicker {
   0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; }
 }
-.kw-fate {
-  font-size: 18px;
-  font-style: italic;
-  color: #c8c0b0;
-  min-height: 26px;
-  margin-bottom: 20px;
-}
+.kw-fate { font-size: 18px; font-style: italic; color: #c8c0b0; min-height: 26px; margin-bottom: 20px; }
 .kw-btn {
   font-family: 'IM Fell English', serif;
   font-size: 18px;
@@ -604,94 +337,51 @@ html, body {
 .kw-btn:active { transform: scale(0.98); }
 .kw-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 .kw-status { margin-top: 10px; font-size: 16px; font-style: italic; color: #a09888; min-height: 20px; }
-.kw-history {
-  width: 100%;
-  max-width: 420px;
-  margin-top: 16px;
-}
-.kw-history-title {
-  font-family: 'IM Fell English', serif;
-  font-size: 16px;
-  letter-spacing: 0.1em;
-  color: #a09888;
-  text-align: center;
-  margin-bottom: 10px;
-}
-.kw-chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
-.kw-chip {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 20px;
-  padding: 5px 14px;
-  font-size: 16px;
-  color: #c8c0b0;
-}
-.kw-chip b { font-family: 'Ma Shan Zheng', serif; font-size: 18px; color: #f5f0e8; font-weight: 700; }
-.kw-chip small { font-size: 12px; opacity: 0.5; margin-left: 3px; }
 
-.kw-method-card.active {
-  border: 2.5px solid #000073;
-  background: #e8e8f5;
-  box-shadow: 0 0 0 3px rgba(0,0,115,0.3), 0 0 18px rgba(0,100,255,0.5), inset 0 2px 6px rgba(0,0,0,0.15);
-  transform: scale(1.06);
-  animation: kwMethodGlow 1.4s ease-in-out infinite alternate;
-}
-@keyframes kwMethodGlow {
-  from { box-shadow: 0 0 0 3px rgba(0,0,115,0.2), 0 0 12px rgba(0,100,255,0.35); }
-  to   { box-shadow: 0 0 0 4px rgba(0,0,115,0.4), 0 0 28px rgba(0,100,255,0.7); }
-}
-.kw-method-card:not(.active) { opacity: 0.55; transform: scale(1); }
-
-.haircut-box {
-  width: 100%;
-  max-width: 420px;
-  border: 1px solid rgba(0,191,255,0.2);
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 20px;
-  background: var(--dim2);
-}
-.haircut-date-input {
-  width: 100%;
-  height: 46px;
-  border-radius: 8px;
-  border: 1px solid rgba(0,191,255,0.3);
-  background: rgba(0,0,0,0.35);
-  color: white;
-  font-size: 14px;
-  padding: 0 14px;
-  outline: none;
-  margin-bottom: 12px;
-}
-.haircut-date-input:focus { border-color: var(--sky); }
-
-/* ── GYO Standalone overrides ── */
-.screen:not(.active) { display: none; }
-.screen.active { display: flex; }
-
-#screen-gyo-login {
-  background: linear-gradient(180deg, #000073 0%, #00004a 100%);
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 24px;
+/* Loading states */
+.sp-loading {
+  font-family: 'IM Fell English', serif !important;
+  font-style: italic !important;
+  font-size: 15px !important;
+  color: #ccff00 !important;
+  animation: haircutPulse 1.2s ease-in-out infinite !important;
   text-align: center;
 }
-  </style>
+.sp-loading-img { animation: haircutGlowBlob 1.6s ease-in-out infinite !important; }
+@keyframes haircutGlowBlob {
+  0%,100% { filter: drop-shadow(0 0 6px rgba(204,255,0,0.9)) drop-shadow(0 0 20px rgba(204,255,0,0.5)); transform: scale(1); }
+  50%      { filter: drop-shadow(0 0 18px rgba(204,255,0,1)) drop-shadow(0 0 40px rgba(204,255,0,0.7)); transform: scale(1.07); }
+}
+@keyframes haircutPulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+#verify-text::after {
+  content:'';
+  animation: dotsAnim 1.2s steps(4,end) infinite;
+}
+@keyframes dotsAnim {
+  0%  { content:''; }
+  25% { content:'.'; }
+  50% { content:'..'; }
+  75% { content:'...'; }
+}
+</style>
 </head>
 <body>
 
-<!-- Profile corner -->
 <!-- Profile pic corner -->
 <div id="profile-corner" onclick="toggleLogoutPopup()">
   <img id="profile-corner-img" src="" alt="">
   <div id="profile-corner-code"></div>
 </div>
 <div id="logout-popup">
-  <button onclick="showProfilePicUploader()" style="background:none;border:1px solid rgba(0,191,255,0.4);color:rgba(0,191,255,0.85);font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.08em;padding:10px 14px;border-radius:8px;cursor:pointer;text-align:left;">👤 Change profile pic</button>
-  <button onclick="useDefaultProfilePic()" style="background:none;border:1px solid rgba(0,191,255,0.3);color:rgba(0,191,255,0.65);font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.08em;padding:10px 14px;border-radius:8px;cursor:pointer;text-align:left;">👤 Use default profile pic</button>
+  <button class="btn-blue" onclick="showProfilePicUploader()">👤 Change profile pic</button>
+  <button class="btn-blue" onclick="useDefaultProfilePic()">👤 Use default profile pic</button>
   <button onclick="doLogout()">⟵ Log out</button>
 </div>
 
@@ -723,15 +413,13 @@ html, body {
     <button onclick="closePpuModal()" style="background:none; border:none; color:rgba(255,255,255,0.4); font-family:'Cinzel',serif; font-size:11px; cursor:pointer; letter-spacing:0.1em;">✕ Cancel</button>
   </div>
 </div>
-</div>
-<div id="logout-popup" style="display:none; position:fixed; top:60px; right:10px; z-index:9999; background:rgba(0,0,60,0.97); border:1px solid rgba(0,191,255,0.35); border-radius:12px; padding:14px 18px; flex-direction:column; gap:10px; box-shadow:0 8px 24px rgba(0,0,0,0.5); min-width:160px;">
-  <button onclick="doLogout()" style="background:none;border:1px solid rgba(255,80,80,0.5);color:rgba(255,150,150,0.9);font-family:'Cinzel',serif;font-size:12px;letter-spacing:0.1em;padding:10px 14px;border-radius:8px;cursor:pointer;">⟵ Log out</button>
-</div>
 
-<!-- LOGIN SCREEN -->
+<!-- ═══════════════════════════════════════════════
+     LOGIN SCREEN
+     ═══════════════════════════════════════════════ -->
 <div id="screen-gyo-login" class="screen active">
-  <img src="https://i.postimg.cc/cLc0dSD1/Kwan-Yin.png" alt="Guanyin"
-    style="width:110px;height:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(204,255,0,0.9)) drop-shadow(0 0 28px rgba(204,255,0,0.5));margin-bottom:20px;">
+  <img src="https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png" alt="GYO"
+    style="width:120px;height:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(204,255,0,0.9)) drop-shadow(0 0 28px rgba(204,255,0,0.5));margin-bottom:20px;">
   <div style="font-family:'Klee One','Ma Shan Zheng',cursive;font-size:26px;color:#f5f0e8;text-shadow:0 0 8px rgba(255,245,80,0.8);margin-bottom:6px;">觀音靈簽</div>
   <div style="font-family:'Aleo',serif;font-size:18px;color:var(--sky,#00BFFF);letter-spacing:0.08em;margin-bottom:4px;">GYO</div>
   <div style="font-family:'Cinzel',serif;font-size:12px;color:#e0b0ff;letter-spacing:0.2em;margin-bottom:40px;">Divination (i) Tsutsuji</div>
@@ -744,8 +432,8 @@ html, body {
 </div>
 
 <!-- VERIFYING SCREEN -->
-<div id="screen-gyo-verify" class="screen" style="background:linear-gradient(180deg,#000073,#00004a);min-height:100dvh;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;">
-  <img src="https://i.postimg.cc/cLc0dSD1/Kwan-Yin.png" class="sp-loading-img" style="width:80px;height:auto;object-fit:contain;">
+<div id="screen-gyo-verify" class="screen" style="justify-content:center;gap:20px;">
+  <img src="https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png" class="sp-loading-img" style="width:80px;height:auto;object-fit:contain;">
   <div class="sp-loading">Loading…</div>
 </div>
 
@@ -755,7 +443,7 @@ html, body {
   <div style="position:absolute; inset:0; background: rgba(0,0,50,0.45); z-index:1;"></div>
   <div style="position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100dvh; padding: 40px 20px; text-align:center;" onclick="gyoEnter()">
     <div style="font-family:'Klee One','Ma Shan Zheng',cursive; font-size:52px; color:#f5f0e8; text-shadow: 0 0 8px rgba(255,245,80,0.9), 0 0 30px rgba(255,243,100,0.6); margin-bottom:20px;">觀音靈簽</div>
-    <img src="https://i.postimg.cc/cLc0dSD1/Kwan-Yin.png" alt="Kwanyin" style="max-height:200px; width:auto; filter:drop-shadow(0 0 8px rgba(204,255,0,0.95)) drop-shadow(0 0 28px rgba(204,255,0,0.55)) drop-shadow(0 0 60px rgba(204,255,0,0.25)); margin-bottom:30px;">
+    <img src="https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png" alt="GYO" style="max-height:200px; width:auto; filter:drop-shadow(0 0 8px rgba(204,255,0,0.95)) drop-shadow(0 0 28px rgba(204,255,0,0.55)) drop-shadow(0 0 60px rgba(204,255,0,0.25)); margin-bottom:30px;">
     <div style="font-family:'IM Fell English',serif; font-size:18px; font-style:italic; color:rgba(255,245,220,0.8); margin-bottom:40px;">Tap anywhere to enter</div>
     <div style="position:absolute; bottom:28px; text-align:center;">
       <div style="font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.15em; color:rgba(255,255,255,0.35);">VISITS</div>
@@ -764,16 +452,102 @@ html, body {
   </div>
 </div>
 
-<!-- DRAW + RESULT SCREENS -->
+<!-- ═══════════════════════════════════════════════
+     GYO HOME MENU SCREEN
+     ═══════════════════════════════════════════════ -->
+<div id="screen-gyo-menu" class="screen">
+  <div class="gyo-menu-logo">
+    <img src="https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png" alt="GYO">
+    <div class="gyo-menu-logo-title">觀音靈簽</div>
+    <div class="gyo-menu-logo-sub">Divination (i) Tsutsuji</div>
+  </div>
+
+  <div class="cards" style="max-width:420px;">
+    <!-- Draw Lots -->
+    <div class="card card-tool" onclick="goTo('screen-B2-2-2-T2')">
+      <div class="card-icon" style="font-size:32px;">🔮</div>
+      <div class="card-text">
+        <div class="card-title">Draw a Lot</div>
+        <div class="card-desc">Ask a question · Draw your lot</div>
+      </div>
+      <div class="card-arrow">›</div>
+    </div>
+
+    <!-- Previously Drawn Lots -->
+    <div class="card card-screen" onclick="goTo('screen-gyo-history')">
+      <div class="card-icon" style="font-size:32px;">🗂️</div>
+      <div class="card-text">
+        <div class="card-title">Previously Drawn Lots</div>
+        <div class="card-desc">Your last 5 draws · Local only</div>
+      </div>
+      <div class="card-arrow">›</div>
+    </div>
+
+    <!-- Lots Directory -->
+    <div class="card card-ext" onclick="goTo('screen-gyo-directory')">
+      <div class="card-icon" style="font-size:32px;">📖</div>
+      <div class="card-text">
+        <div class="card-title">Lots Directory</div>
+        <div class="card-desc">Browse all 100 Guanyin lots</div>
+      </div>
+      <div class="card-arrow">›</div>
+    </div>
+  </div>
+
+  <div style="margin-top:40px; text-align:center;">
+    <img src="https://i.postimg.cc/kXbp4m8s/tsutsuji-Divination-logo-1-glow-green.png" alt="Tsutsuji" style="width:80px;height:auto;object-fit:contain;opacity:0.85;">
+  </div>
+
+  <div class="portal-footer">
+    <div class="footer-credit">Developed by <strong>Claude</strong> · Conceived &amp; directed by <strong>SPGo</strong></div>
+    <div class="footer-copy">© 2026 · SPGo · All rights reserved</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PREVIOUSLY DRAWN LOTS — HISTORY SCREEN
+     ═══════════════════════════════════════════════ -->
+<div id="screen-gyo-history" class="screen">
+  <div class="inner-header" style="max-width:420px; width:100%;">
+    <button class="back-btn" onclick="goTo('screen-gyo-menu')">‹</button>
+    <span class="inner-title">Previously Drawn Lots</span>
+  </div>
+
+  <p class="hist-privacy-note">Your last 5 draws are only saved locally on this device.</p>
+
+  <div id="hist-slots-container" style="width:100%; max-width:420px;">
+    <!-- slots rendered by JS -->
+  </div>
+
+  <div class="portal-footer">
+    <div class="footer-credit">Developed by <strong>Claude</strong> · Conceived &amp; directed by <strong>SPGo</strong></div>
+    <div class="footer-copy">© 2026 · SPGo · All rights reserved</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     LOTS DIRECTORY SCREEN (embedded)
+     ═══════════════════════════════════════════════ -->
+<div id="screen-gyo-directory" class="screen" style="padding:0;">
+  <div style="width:100%; display:flex; align-items:center; gap:12px; padding:16px 16px 12px; border-bottom:1px solid rgba(255,255,255,0.08); background:rgba(0,0,60,0.95); position:sticky; top:0; z-index:10; box-sizing:border-box;">
+    <button class="back-btn" onclick="goTo('screen-gyo-menu')" style="font-size:26px; background:none; border:none; color:#00BFFF; cursor:pointer; padding:0 6px 0 0; line-height:1; flex-shrink:0;">‹</button>
+    <span style="font-family:'Cinzel',serif; font-size:13px; letter-spacing:0.15em; color:rgba(255,255,255,0.7); text-transform:uppercase;">Lots Directory</span>
+  </div>
+  <iframe id="gyo-dir-iframe" src="https://spgo5.github.io/Go5.GYO.Directory/" title="Lots Directory" allowfullscreen></iframe>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     DRAW + RESULT SCREENS
+     ═══════════════════════════════════════════════ -->
 <div id="screen-B2-2-2-T2" class="screen">
   <div class="inner-header" style="max-width:420px; width:100%;">
-    <button class="back-btn" onclick="goBack()">‹</button>
-    <span class="inner-title">Draw a lot</span>
+    <button class="back-btn" onclick="goTo('screen-gyo-menu')">‹</button>
+    <span class="inner-title">Draw a Lot</span>
   </div>
 
   <div id="kw-main-view" style="display:flex; flex-direction:column; align-items:center; width:100%;">
     <div class="kwanyin-title">觀音靈簽</div>
-    <img class="kwanyin-img" src="https://i.postimg.cc/cLc0dSD1/Kwan-Yin.png" alt="Kwanyin">
+    <img class="kwanyin-img" src="https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png" alt="GYO">
 
     <p style="font-size:14px; font-style:italic; color:#c8c0b0; text-align:center; margin-bottom:18px;">Choose your source of randomness</p>
 
@@ -796,8 +570,8 @@ html, body {
     </div>
 
     <div style="width:100%; max-width:420px; margin-bottom:16px;">
-      <label style="font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-dim); display:block; margin-bottom:8px;">Type your question here:</label>
-      <textarea id="kw-question" rows="3" placeholder="What would you like to ask Her Holy's Wisdom?" style="width:100%; border-radius:10px; border:1px solid rgba(0,191,255,0.3); background:rgba(0,0,0,0.35); color:white; font-size:16px; font-family:'Crimson Pro',serif; font-size:16px; padding:12px 14px; outline:none; resize:none; line-height:1.5; min-height:60px; overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+      <label style="font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.35); display:block; margin-bottom:8px;">Type your question here:</label>
+      <textarea id="kw-question" rows="3" placeholder="What would you like to ask Her Holy's Wisdom?" style="width:100%; border-radius:10px; border:1px solid rgba(0,191,255,0.3); background:rgba(0,0,0,0.35); color:white; font-size:16px; font-family:'Crimson Pro',serif; padding:12px 14px; outline:none; resize:none; line-height:1.5; min-height:60px; overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
     </div>
 
     <div class="kw-stage">
@@ -806,7 +580,7 @@ html, body {
       <div class="kw-fate" id="kw-fate" style="margin-top:20px; min-height:22px;"></div>
       <div class="kw-status" id="kw-status"></div>
       <div class="kw-number" id="kw-number" style="margin-top:8px; color:#ccff00; font-family:'Cormorant Garamond',serif; font-weight:700; font-size:128px; line-height:1; text-shadow:0 0 8px rgba(204,255,0,0.95), 0 0 30px rgba(204,255,0,0.6), 0 0 60px rgba(204,255,0,0.3);">—</div>
-      <button id="kw-print-btn" onclick="kwShowResult()" style="display:none; margin-top:20px; font-family:'Cinzel',serif; font-size:13px; letter-spacing:0.12em; color:var(--navy); background:var(--sky); border:none; border-radius:10px; padding:12px 28px; cursor:pointer; font-weight:700;">Print the Result</button>
+      <button id="kw-print-btn" onclick="kwShowResult()" style="display:none; margin-top:20px; font-family:'Cinzel',serif; font-size:13px; letter-spacing:0.12em; color:#000073; background:#00BFFF; border:none; border-radius:10px; padding:12px 28px; cursor:pointer; font-weight:700;">Print the Result</button>
     </div>
 
     <!-- Unreachable popup -->
@@ -823,16 +597,17 @@ html, body {
     </div>
 
     <div style="text-align:center; margin-top:32px; padding-bottom:16px;">
-      <img src="https://i.postimg.cc/Qd3Ts8C0/tsutsuji_2.png" alt="Tsutsuji" style="width:56px; height:56px; object-fit:contain; opacity:0.75;">
+      <img src="https://i.postimg.cc/kXbp4m8s/tsutsuji-Divination-logo-1-glow-green.png" alt="Tsutsuji" style="width:72px; height:auto; object-fit:contain; opacity:0.85;">
     </div>
   </div>
 
+  <!-- RESULT VIEW -->
   <div id="kw-result-view" style="display:none; flex-direction:column; align-items:center; width:100%; position:relative; min-height:80dvh;">
     <div style="position:fixed; inset:0; z-index:-1; background-image:url('https://i.postimg.cc/QNzjqmR1/Draw-AKwan-Yin-Lot.png'); background-size:cover; background-position:center;"></div>
     <div style="position:fixed; inset:0; z-index:-1; background:rgba(0,0,40,0.6);"></div>
     <div style="position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; padding:28px 24px 48px; text-align:center; width:100%; max-width:420px;">
       <div style="font-family:'Cinzel',serif; font-size:15px; font-weight:600; letter-spacing:0.15em; color:rgba(255,245,220,0.9); margin-bottom:14px;">Divination (i) Tsutsuji</div>
-      <img src="https://i.postimg.cc/cLc0dSD1/Kwan-Yin.png" alt="Kwanyin" style="max-height:120px; width:auto; filter:drop-shadow(0 0 8px rgba(204,255,0,0.95)) drop-shadow(0 0 28px rgba(204,255,0,0.55)) drop-shadow(0 0 60px rgba(204,255,0,0.25)); margin-bottom:10px;">
+      <img src="https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png" alt="GYO" style="max-height:120px; width:auto; filter:drop-shadow(0 0 8px rgba(204,255,0,0.95)) drop-shadow(0 0 28px rgba(204,255,0,0.55)) drop-shadow(0 0 60px rgba(204,255,0,0.25)); margin-bottom:10px;">
       <div style="font-family:'Klee One','Ma Shan Zheng',cursive; font-size:24px; color:#f5f0e8; text-shadow:0 0 8px rgba(255,245,80,0.8); margin-bottom:14px;">觀音靈簽</div>
       <div id="kw-result-datetime" style="font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.12em; color:rgba(255,245,220,0.55); margin-bottom:14px;"></div>
       <div style="width:100%; margin-bottom:10px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.15); border-radius:12px; padding:20px 22px; text-align:left;">
@@ -844,7 +619,7 @@ html, body {
         </div>
       </div>
       <div id="kw-result-source" style="font-family:'Crimson Pro',serif; font-style:italic; font-size:12px; color:rgba(255,245,220,0.45); text-align:center; margin-bottom:14px;"></div>
-      <img src="https://i.postimg.cc/Qd3Ts8C0/tsutsuji_2.png" alt="Tsutsuji" style="width:48px; height:48px; object-fit:contain; opacity:0.75; margin-bottom:16px;">
+      <img src="https://i.postimg.cc/kXbp4m8s/tsutsuji-Divination-logo-1-glow-green.png" alt="Tsutsuji" style="width:56px; height:auto; object-fit:contain; opacity:0.85; margin-bottom:16px;">
       <a id="kw-lot-link" href="#" target="_blank" style="display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:14px; background:rgba(255,245,220,0.12); border:1px solid rgba(255,245,220,0.3); border-radius:10px; font-family:'Cinzel',serif; font-size:12px; letter-spacing:0.1em; color:rgba(255,245,220,0.8); text-decoration:none; margin-bottom:4px; cursor:pointer;">
         <img src="https://i.postimg.cc/kgmb9JGx/tsutsuji_1_no_leave_2.png" style="width:20px;height:20px;object-fit:contain;">
         <span id="kw-lot-link-text">See what this Lot says ↗</span>
@@ -853,7 +628,7 @@ html, body {
       <div style="width:100%; height:1px; background:rgba(255,255,255,0.15); margin-bottom:16px;"></div>
       <div style="display:flex; gap:10px; width:100%; margin-bottom:2px;">
         <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
-          <button onclick="kwCopyResultImage()" style="width:100%; padding:12px 8px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25); color:white; font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.08em; border-radius:10px; cursor:pointer; backdrop-filter:blur(4px);">Copy Result 📷</button>
+          <button onclick="kwCopyResultImage()" style="width:100%; padding:12px 8px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25); color:white; font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.08em; border-radius:10px; cursor:pointer; backdrop-filter:blur(4px);">Copy 📷</button>
           <span id="kw-img-copy-confirm" style="font-size:11px; color:rgba(255,255,255,0.6); font-style:italic; opacity:0; transition:opacity 0.3s; height:16px;">Downloaded!</span>
         </div>
         <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
@@ -876,13 +651,9 @@ html, body {
 
 <script src="https://spgo5.github.io/Go5.SHARED/spgo-core.js"></script>
 <script>
-// GYO-specific constants
-
 // ================================================================
 // 🔮 GYO — Guanyin Oracle Standalone · Divination (i) Tsutsuji
 // ================================================================
-
-
 
 // ── Screen navigation ──
 function goTo(screenId) {
@@ -893,8 +664,8 @@ function goTo(screenId) {
   const el = document.getElementById(screenId);
   if (el) { el.style.display = 'flex'; el.classList.add('active'); window.scrollTo(0, 0); }
   if (screenId === 'screen-B2-2-2-T2') resetKwanyin();
+  if (screenId === 'screen-gyo-history') renderHistorySlots();
 }
-function goBack() {}
 
 // ── JSONP helper ──
 function gasJsonp(params, onSuccess, onError, timeoutMs) {
@@ -916,9 +687,7 @@ function showLoginError(msg) {
 }
 
 // ── Verifying screen ──
-function showVerifying() {
-  goTo('screen-gyo-verify');
-}
+function showVerifying() { goTo('screen-gyo-verify'); }
 
 // ── Start Google login ──
 function startGoogleLogin() {
@@ -1012,15 +781,12 @@ function checkOAuthReturn() {
   goTo('screen-gyo-login');
 }
 
-// ── Set home state: go to GYO splash ──
+// ── Set home state: show splash then menu ──
 function setHomeState() {
   goTo('screen-B2-2-2-splash');
   updateProfileCorner();
   applyTierGating();
 }
-
-// ── Profile corner ──
-
 
 // ── Logout ──
 function toggleLogoutPopup() {
@@ -1058,7 +824,125 @@ function initGoogleAuth() {}
 function getTimeGreeting() { const h = new Date().getHours(); return h<12?'Good morning':h<17?'Good afternoon':h<21?'Good evening':'Good night'; }
 
 // ── GYO navigation ──
-function gyoEnter() { goTo('screen-B2-2-2-T2'); }
+function gyoEnter() { goTo('screen-gyo-menu'); }
+
+// ================================================================
+// LOCAL HISTORY — max 5 draws, FIFO, localStorage
+// ================================================================
+const HIST_KEY = 'gyo_draw_history';
+const HIST_MAX = 5;
+
+function histLoad() {
+  try {
+    const raw = localStorage.getItem(HIST_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function histSave(arr) {
+  try { localStorage.setItem(HIST_KEY, JSON.stringify(arr)); } catch(e) {}
+}
+
+function histPush(entry) {
+  // entry: { lot, question, datetime, source }
+  let arr = histLoad();
+  arr.unshift(entry); // newest first
+  if (arr.length > HIST_MAX) arr = arr.slice(0, HIST_MAX);
+  histSave(arr);
+}
+
+function histDelete(idx) {
+  let arr = histLoad();
+  arr.splice(idx, 1);
+  histSave(arr);
+  renderHistorySlots();
+}
+
+function getQuestionPreview(q) {
+  if (!q) return '(No question entered)';
+  const words = q.trim().split(/\s+/);
+  if (words.length <= 10) return q.trim();
+  return words.slice(0, 10).join(' ') + '…';
+}
+
+function renderHistorySlots() {
+  const container = document.getElementById('hist-slots-container');
+  if (!container) return;
+  const arr = histLoad();
+  let html = '';
+
+  for (let i = 0; i < HIST_MAX; i++) {
+    const entry = arr[i];
+    const isLast = (i === HIST_MAX - 1);
+
+    if (!entry) {
+      // Empty slot
+      html += `<div class="hist-slot empty">
+        <div class="hist-slot-empty-label">— Empty slot ${i+1} —</div>
+      </div>`;
+    } else {
+      const warn = (isLast && arr.length === HIST_MAX)
+        ? `<div class="hist-replace-warn">Next draw will replace this card. Download the PNG to keep it permanently.</div>`
+        : '';
+      const qPreview = getQuestionPreview(entry.question);
+      html += `${warn}<div class="hist-slot" id="hist-slot-${i}">
+        <div class="hist-slot-num">Draw ${i+1} · ${entry.datetime || ''}</div>
+        <div>
+          <span class="hist-slot-lot">${entry.lot}</span>
+          <span class="hist-slot-date">${entry.source || ''}</span>
+        </div>
+        <div class="hist-slot-q">${escHtml(qPreview)}</div>
+        <div class="hist-slot-actions">
+          <button class="btn-regen" onclick="histRegenerate(${i})">↺ Regenerate</button>
+          <button class="btn-copy-img" onclick="histCopyImage(${i})">Copy 📷</button>
+          <button class="btn-del" onclick="histDelete(${i})">Delete 🗑️</button>
+        </div>
+      </div>`;
+    }
+  }
+  container.innerHTML = html;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function histRegenerate(idx) {
+  const arr = histLoad();
+  const entry = arr[idx];
+  if (!entry) return;
+  // Pre-populate and show result view directly
+  kwLastNumber = entry.lot;
+  kwLastSource = entry.source;
+  kwResultDateTime = entry.datetime;
+  // Set question in textarea
+  const qEl = document.getElementById('kw-question');
+  if (qEl) qEl.value = entry.question || '';
+  // Switch to draw screen and show result
+  goTo('screen-B2-2-2-T2');
+  // Slightly deferred so screen transition completes
+  setTimeout(() => kwShowResult(), 80);
+}
+
+function histCopyImage(idx) {
+  const arr = histLoad();
+  const entry = arr[idx];
+  if (!entry) return;
+  const savedNum = kwLastNumber, savedSrc = kwLastSource, savedDt = kwResultDateTime;
+  const savedQ = (document.getElementById('kw-question') || {}).value || '';
+  kwLastNumber = entry.lot;
+  kwLastSource = entry.source;
+  kwResultDateTime = entry.datetime;
+  const qEl = document.getElementById('kw-question');
+  if (qEl) qEl.value = entry.question || '';
+  kwCopyResultImage(() => {
+    // Restore
+    kwLastNumber = savedNum;
+    kwLastSource = savedSrc;
+    kwResultDateTime = savedDt;
+    if (qEl) qEl.value = savedQ;
+  });
+}
 
 // ================================================================
 // GYO — Kwanyin Oracle Logic
@@ -1066,6 +950,8 @@ function gyoEnter() { goTo('screen-B2-2-2-T2'); }
 let kwLastNumber = null;
 let kwLastSource = null;
 let kwResultDateTime = '';
+let kwSelectedMethod = 'quantum';
+let kwIsDrawing = false;
 
 function kwRetryQuantum() {
   const popup = document.getElementById('kw-unreachable-popup');
@@ -1144,11 +1030,10 @@ async function kwDraw() {
       if (statusEl) statusEl.textContent = 'Querying quantum vacuum…';
       try { number = await quantumFetchN(100); }
       catch {
-        // Show unreachable popup instead of silent fallback
         if (statusEl) statusEl.textContent = '';
         btn.disabled = false; btn.textContent = 'Draw a lot'; kwIsDrawing = false;
-        const popup = document.getElementById('kw-unreachable-popup');
-        if (popup) popup.style.display = 'block';
+        const popup2 = document.getElementById('kw-unreachable-popup');
+        if (popup2) popup2.style.display = 'block';
         return;
       }
     }
@@ -1192,7 +1077,6 @@ function kwShowResult() {
   if (!kwLastNumber) return;
   const mv = document.getElementById('kw-main-view'); if (mv) mv.style.display = 'none';
   const rv = document.getElementById('kw-result-view'); if (rv) rv.style.display = 'flex';
-  // Stop infinite animations on hidden elements to save resources
   document.querySelectorAll('.kw-method-card').forEach(c => c.style.animation = 'none');
   const rawQ = (document.getElementById('kw-question') || {}).value || '';
   const smartQ = kwSmartCapitalise(rawQ);
@@ -1206,12 +1090,20 @@ function kwShowResult() {
   const srcLabels = { 'quantum': '⚛️ Quantum', 'random-org': '📡 Atm.', 'crypto': '🔐 Crypto' };
   const srcEl = document.getElementById('kw-result-source'); if (srcEl) srcEl.textContent = 'Randomness provided by ' + (srcLabels[kwLastSource] || kwLastSource || 'Unknown');
   window.scrollTo(0, 0);
+
+  // Save to local history
+  const question = (document.getElementById('kw-question') || {}).value || '';
+  histPush({
+    lot: kwLastNumber,
+    question: question,
+    datetime: kwResultDateTime,
+    source: kwLastSource
+  });
 }
 
 function kwAskAnother() {
   const rv = document.getElementById('kw-result-view'); if (rv) rv.style.display = 'none';
   const mv = document.getElementById('kw-main-view'); if (mv) mv.style.display = 'flex';
-  // Restore animations
   document.querySelectorAll('.kw-method-card').forEach(c => c.style.animation = '');
   resetKwanyin();
   window.scrollTo(0, 0);
@@ -1246,7 +1138,8 @@ function kwWrapText(ctx, text, x, y, maxW, lineH) {
   ctx.fillText(line, x, y);
 }
 
-function kwCopyResultImage() {
+// ── kwCopyResultImage: fixed to properly load images via CORS proxy + blob approach ──
+function kwCopyResultImage(onDoneCallback) {
   if (!kwLastNumber) return;
   const rawQ = (document.getElementById('kw-question') || {}).value || '';
   const smartQ = kwSmartCapitalise(rawQ);
@@ -1254,6 +1147,7 @@ function kwCopyResultImage() {
   const lotNum = kwLastNumber;
   const dt = kwResultDateTime;
   const src = kwLastSource;
+
   const SCALE = 2, SW = 420, W = SW * SCALE;
   const tmpC = document.createElement('canvas'); tmpC.width = W;
   const tmpCtx = tmpC.getContext('2d');
@@ -1280,109 +1174,167 @@ function kwCopyResultImage() {
   const H = footerY + px(30);
   const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
-  const bg = ctx.createLinearGradient(0, 0, 0, H);
-  bg.addColorStop(0, '#000073'); bg.addColorStop(1, '#00004a');
-  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
-  const guanyinUrl = 'https://i.postimg.cc/cLc0dSD1/Kwan-Yin.png';
-  const tsutsujiUrl = 'https://i.postimg.cc/Qd3Ts8C0/tsutsuji_2.png';
+
+  // Use the updated GYO portal image
+  const gyoImgUrl = 'https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png';
+  const tsutsujiUrl = 'https://i.postimg.cc/kXbp4m8s/tsutsuji-Divination-logo-1-glow-green.png';
   const profileUrl = currentUser ? PROFILE_PIC_BASE + encodeURIComponent(currentUser) + '-Profile-Pic-R.png' : null;
-  let guanyinImg = null, tsutsujiImg = null, profileImg = null;
-  const totalToLoad = profileUrl ? 3 : 2; let loaded = 0;
-  function onLoaded() { loaded++; if (loaded >= totalToLoad) draw(); }
+
+  let gyoImg = null, tsutsujiImg = null, profileImg = null;
+  const totalToLoad = profileUrl ? 3 : 2;
+  let loaded = 0;
+
+  function onLoaded() {
+    loaded++;
+    if (loaded >= totalToLoad) draw();
+  }
+
+  function loadImageCORS(url, onLoad, onErr) {
+    // Try direct CORS first; fall back to no-cors (just to trigger onLoad so draw() fires)
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => onLoad(img);
+    img.onerror = () => {
+      // Fallback: try without crossOrigin (won't be drawable but won't stall)
+      const img2 = new Image();
+      img2.onload = () => onLoad(img2);
+      img2.onerror = () => onErr();
+      img2.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
+    };
+    img.src = url;
+  }
+
   function draw() {
     const mid = W / 2;
+    // Background
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#000073'); bg.addColorStop(1, '#00004a');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+    // Profile pic (top right)
     if (profileImg && currentUser) {
       const pR = px(25), pX = W - px(40), pY = px(46);
-      ctx.save(); ctx.beginPath(); ctx.arc(pX, pY, pR, 0, Math.PI*2); ctx.clip();
-      ctx.drawImage(profileImg, pX-pR, pY-pR, pR*2, pR*2); ctx.restore();
+      ctx.save();
+      ctx.beginPath(); ctx.arc(pX, pY, pR, 0, Math.PI*2); ctx.clip();
+      try { ctx.drawImage(profileImg, pX-pR, pY-pR, pR*2, pR*2); } catch(e) {}
+      ctx.restore();
     }
-    ctx.fillStyle = 'rgba(255,245,220,0.9)'; ctx.font = '600 ' + px(15) + 'px Cinzel, serif';
-    ctx.textAlign = 'center'; ctx.fillText('Divination (i) Tsutsuji', mid, titleY);
-    if (guanyinImg) {
-      const ratio = guanyinImg.width / guanyinImg.height, iH = imgH, iW = ratio * iH;
-      ctx.save(); ctx.shadowColor = 'rgba(204,255,0,0.9)'; ctx.shadowBlur = px(14);
-      ctx.drawImage(guanyinImg, mid - iW/2, imgTop, iW, iH); ctx.restore();
+
+    // Title
+    ctx.fillStyle = 'rgba(255,245,220,0.9)';
+    ctx.font = '600 ' + px(15) + 'px Cinzel, serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Divination (i) Tsutsuji', mid, titleY);
+
+    // GYO image
+    if (gyoImg) {
+      const ratio = gyoImg.naturalWidth / gyoImg.naturalHeight || 1;
+      const iH = imgH, iW = ratio * iH;
+      ctx.save();
+      ctx.shadowColor = 'rgba(204,255,0,0.9)'; ctx.shadowBlur = px(14);
+      try { ctx.drawImage(gyoImg, mid - iW/2, imgTop, iW, iH); } catch(e) {}
+      ctx.restore();
     }
-    ctx.fillStyle = '#f5f0e8'; ctx.font = px(24) + 'px "Klee One", serif'; ctx.textAlign = 'center';
+
+    // Kanji
+    ctx.fillStyle = '#f5f0e8';
+    ctx.font = px(24) + 'px "Klee One", serif';
+    ctx.textAlign = 'center';
     ctx.save(); ctx.shadowColor = 'rgba(255,245,80,0.8)'; ctx.shadowBlur = px(4);
-    ctx.fillText('觀音靈簽', mid, kanjiY); ctx.restore();
-    ctx.fillStyle = 'rgba(255,245,220,0.55)'; ctx.font = px(11) + 'px Cinzel, serif'; ctx.textAlign = 'center';
+    ctx.fillText('觀音靈簽', mid, kanjiY);
+    ctx.restore();
+
+    // Date
+    ctx.fillStyle = 'rgba(255,245,220,0.55)';
+    ctx.font = px(11) + 'px Cinzel, serif';
+    ctx.textAlign = 'center';
     ctx.fillText(dt, mid, dateY);
+
+    // Box
     const bx = px(20), bw = W - bx*2, by = boxTop, bh = boxH_content;
-    ctx.fillStyle = 'rgba(255,255,255,0.07)'; kwRoundRect(ctx, bx, by, bw, bh, px(12)); ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = px(1); kwRoundRect(ctx, bx, by, bw, bh, px(12)); ctx.stroke();
-    ctx.fillStyle = 'rgba(255,245,220,0.5)'; ctx.font = px(11) + 'px Cinzel, serif'; ctx.textAlign = 'left';
+    ctx.fillStyle = 'rgba(255,255,255,0.07)';
+    kwRoundRect(ctx, bx, by, bw, bh, px(12)); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = px(1);
+    kwRoundRect(ctx, bx, by, bw, bh, px(12)); ctx.stroke();
+
+    // Question label
+    ctx.fillStyle = 'rgba(255,245,220,0.5)';
+    ctx.font = px(11) + 'px Cinzel, serif';
+    ctx.textAlign = 'left';
     ctx.fillText('THE ANSWER TO YOUR QUESTION:', bx + boxPad, by + boxPadV + px(18));
-    ctx.fillStyle = '#00E5FF'; ctx.font = qFont;
+
+    // Question text
+    ctx.fillStyle = '#00E5FF';
+    ctx.font = qFont;
     kwWrapText(ctx, question, bx + boxPad, by + boxPadV + boxLabelH + qLineH * 0.75, boxInnerW, qLineH);
-    ctx.fillStyle = 'rgba(255,245,220,0.5)'; ctx.font = px(12) + 'px Cinzel, serif';
-    const isY = by + boxPadV + boxLabelH + qTextH + px(20); ctx.fillText('is:', bx + boxPad, isY);
-    ctx.fillStyle = '#c8a96e'; ctx.font = '300 ' + px(28) + 'px "Cormorant Garamond", serif';
-    const lotLineY = isY + px(32) + px(52); ctx.fillText('Lot', bx + boxPad, lotLineY);
-    ctx.fillStyle = '#ccff00'; ctx.font = '700 ' + px(72) + 'px "Cormorant Garamond", serif';
+
+    // "is:"
+    ctx.fillStyle = 'rgba(255,245,220,0.5)';
+    ctx.font = px(12) + 'px Cinzel, serif';
+    const isY = by + boxPadV + boxLabelH + qTextH + px(20);
+    ctx.fillText('is:', bx + boxPad, isY);
+
+    // Lot label
+    ctx.fillStyle = '#c8a96e';
+    ctx.font = '300 ' + px(28) + 'px "Cormorant Garamond", serif';
+    const lotLineY = isY + px(32) + px(52);
+    ctx.fillText('Lot', bx + boxPad, lotLineY);
+
+    // Lot number
+    ctx.fillStyle = '#ccff00';
+    ctx.font = '700 ' + px(72) + 'px "Cormorant Garamond", serif';
     ctx.save(); ctx.shadowColor = 'rgba(204,255,0,0.9)'; ctx.shadowBlur = px(8);
-    ctx.fillText(String(lotNum), bx + boxPad + px(80), lotLineY); ctx.restore();
+    ctx.fillText(String(lotNum), bx + boxPad + px(80), lotLineY);
+    ctx.restore();
+
+    // Source note
     const srcLabels = { 'quantum': '⚛️ Quantum', 'random-org': '📡 Atm.', 'crypto': '🔐 Crypto' };
-    ctx.fillStyle = 'rgba(255,245,220,0.45)'; ctx.font = 'italic ' + px(12) + 'px "Crimson Pro", serif';
-    ctx.textAlign = 'center'; ctx.fillText('Randomness provided by ' + (srcLabels[src] || src || 'Unknown'), mid, srcNoteY);
-    if (tsutsujiImg) { const tH = px(48), tW = tsutsujiImg.width * (tH / tsutsujiImg.height); ctx.globalAlpha = 0.85; ctx.drawImage(tsutsujiImg, mid - tW/2, flowerY, tW, tH); ctx.globalAlpha = 1; }
-    ctx.fillStyle = 'rgba(255,245,220,0.2)'; ctx.font = px(11) + 'px "Cinzel", serif'; ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(255,245,220,0.45)';
+    ctx.font = 'italic ' + px(12) + 'px "Crimson Pro", serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Randomness provided by ' + (srcLabels[src] || src || 'Unknown'), mid, srcNoteY);
+
+    // Tsutsuji flower image
+    if (tsutsujiImg) {
+      const tH = px(48), tW = tsutsujiImg.naturalWidth * (tH / tsutsujiImg.naturalHeight) || tH;
+      ctx.globalAlpha = 0.85;
+      try { ctx.drawImage(tsutsujiImg, mid - tW/2, flowerY, tW, tH); } catch(e) {}
+      ctx.globalAlpha = 1;
+    }
+
+    // Footer text
+    ctx.fillStyle = 'rgba(255,245,220,0.2)';
+    ctx.font = px(11) + 'px "Cinzel", serif';
+    ctx.textAlign = 'center';
     ctx.fillText("You're using Super Portal 五 Go", mid, footerY);
+
+    // Download
     const now = new Date();
     const mm = String(now.getMonth()+1).padStart(2,'0'), dd2 = String(now.getDate()).padStart(2,'0');
     const yy = String(now.getFullYear()).slice(2), hh = String(now.getHours()).padStart(2,'0'), mn = String(now.getMinutes()).padStart(2,'0');
     const link = document.createElement('a');
     link.download = 'GYO ' + (currentUser||'Go') + ' Result Card ' + mm+dd2+yy+' '+hh+mn + '.png';
-    link.href = canvas.toDataURL('image/png'); link.click();
-    const imgEl = document.getElementById('kw-img-copy-confirm');
-    if (imgEl) { imgEl.style.opacity = '1'; setTimeout(() => imgEl.style.opacity = '0', 2500); }
+    canvas.toBlob(function(blob) {
+      if (!blob) {
+        // fallback to dataURL
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } else {
+        link.href = URL.createObjectURL(blob);
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+      }
+      const imgEl = document.getElementById('kw-img-copy-confirm');
+      if (imgEl) { imgEl.style.opacity = '1'; setTimeout(() => imgEl.style.opacity = '0', 2500); }
+      if (onDoneCallback) onDoneCallback();
+    }, 'image/png');
   }
-  const gi = new Image(); gi.crossOrigin = 'anonymous'; gi.onload = () => { guanyinImg = gi; onLoaded(); }; gi.onerror = () => onLoaded(); gi.src = guanyinUrl;
-  const ti = new Image(); ti.crossOrigin = 'anonymous'; ti.onload = () => { tsutsujiImg = ti; onLoaded(); }; ti.onerror = () => onLoaded(); ti.src = tsutsujiUrl;
-  if (profileUrl) { const pi = new Image(); pi.crossOrigin = 'anonymous'; pi.onload = () => { profileImg = pi; onLoaded(); }; pi.onerror = () => onLoaded(); pi.src = profileUrl; }
-}
 
-// ── Haircut ──
-function haircutFormatDate(d) {
-  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  return days[d.getDay()] + ', ' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0') + '/' + d.getFullYear();
-}
-function loadTodayHaircut() {
-  const now = new Date();
-  const todayEl = document.getElementById('haircut-today-date'), adviceEl = document.getElementById('haircut-today-advice'), logo = document.getElementById('haircut-logo-img');
-  if (todayEl) todayEl.textContent = haircutFormatDate(now);
-  if (adviceEl) { adviceEl.textContent = 'Loading…'; adviceEl.style.color='#ccff00'; }
-  gasJsonp('action=today', function(data) {
-    const text = data.advice || data.result || data.text || data.answer || data.message || 'No data returned.';
-    if (adviceEl) applyHaircutAdvice(adviceEl, text);
-  }, function() {
-    if (adviceEl) { adviceEl.textContent = 'Unable to load — check connection.'; adviceEl.style.color='rgba(255,255,255,0.5)'; }
-  });
-}
-function checkHaircutDate() {
-  const picker = document.getElementById('haircut-date-picker'); if (!picker || !picker.value) return;
-  const d = new Date(picker.value + 'T12:00:00');
-  const dateLabel = document.getElementById('haircut-custom-date-label'), adviceEl = document.getElementById('haircut-custom-advice'), resultEl = document.getElementById('haircut-custom-result');
-  if (dateLabel) dateLabel.textContent = haircutFormatDate(d);
-  if (adviceEl) { adviceEl.textContent = 'Loading…'; adviceEl.style.color='#ccff00'; }
-  if (resultEl) resultEl.style.display = 'block';
-  gasJsonp('action=date&date=' + encodeURIComponent(picker.value), function(data) {
-    const text = data.advice || data.result || data.text || data.answer || data.message || 'No data returned.';
-    if (adviceEl) applyHaircutAdvice(adviceEl, text);
-  }, function() {
-    if (adviceEl) { adviceEl.textContent = 'Unable to load.'; adviceEl.style.color='rgba(255,255,255,0.5)'; }
-  });
-}
-function cleanHaircutText(text) {
-  return text.replace(/\u2019/g,'').replace(/\u2018/g,'').replace(/'/g,'').replace(/⬛\s*/g,'').replace(/🔵\s*/g,'').replace(/^\s*['"]\s*/gm,'').replace(/\s*['"]\s*$/gm,'').trim();
-}
-function applyHaircutAdvice(el, text) {
-  const isRed = text && text.includes('⬛'), isGreen = text && text.includes('🔵');
-  el.innerHTML = cleanHaircutText(text); el.style.animation = '';
-  if (isRed) el.style.color = '#FF3131';
-  else if (isGreen) el.style.color = '#ccff00';
-  else el.style.color = '';
-  const logo = document.getElementById('haircut-logo-img'); if (logo) logo.classList.remove('loading');
+  loadImageCORS(gyoImgUrl, img => { gyoImg = img; onLoaded(); }, () => onLoaded());
+  loadImageCORS(tsutsujiUrl, img => { tsutsujiImg = img; onLoaded(); }, () => onLoaded());
+  if (profileUrl) {
+    loadImageCORS(profileUrl, img => { profileImg = img; onLoaded(); }, () => onLoaded());
+  }
 }
 
 // ── Init ──
@@ -1409,7 +1361,6 @@ if (document.readyState === 'loading') {
     if (el && data.count !== undefined) el.textContent = data.count.toLocaleString();
   }, function() {});
 }
-
 </script>
 </body>
 </html>
