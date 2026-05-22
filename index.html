@@ -219,14 +219,7 @@ button:active, a.card:active, [onclick]:active {
   margin: 4px 0 8px;
 }
 
-/* ── Lots Directory screen ── */
-#screen-gyo-directory { padding: 0; }
-#gyo-dir-iframe {
-  width: 100%;
-  border: none;
-  flex: 1;
-  min-height: 100dvh;
-}
+
 
 /* ── GYO Oracle / Draw screen ── */
 #screen-B2-2-2-T2 { padding-bottom: 60px; }
@@ -484,7 +477,7 @@ button:active, a.card:active, [onclick]:active {
     </div>
 
     <!-- Lots Directory -->
-    <div class="card card-ext" onclick="goTo('screen-gyo-directory')">
+    <div class="card card-ext" onclick="window.location.href='https://spgo5.github.io/Go5.GYO.Directory/'">
       <div class="card-icon" style="font-size:32px;">📖</div>
       <div class="card-text">
         <div class="card-title">Lots Directory</div>
@@ -525,16 +518,6 @@ button:active, a.card:active, [onclick]:active {
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════
-     LOTS DIRECTORY SCREEN (embedded)
-     ═══════════════════════════════════════════════ -->
-<div id="screen-gyo-directory" class="screen" style="padding:0;">
-  <div style="width:100%; display:flex; align-items:center; gap:12px; padding:16px 16px 12px; border-bottom:1px solid rgba(255,255,255,0.08); background:rgba(0,0,60,0.95); position:sticky; top:0; z-index:10; box-sizing:border-box;">
-    <button class="back-btn" onclick="goTo('screen-gyo-menu')" style="font-size:26px; background:none; border:none; color:#00BFFF; cursor:pointer; padding:0 6px 0 0; line-height:1; flex-shrink:0;">‹</button>
-    <span style="font-family:'Cinzel',serif; font-size:13px; letter-spacing:0.15em; color:rgba(255,255,255,0.7); text-transform:uppercase;">Lots Directory</span>
-  </div>
-  <iframe id="gyo-dir-iframe" src="https://spgo5.github.io/Go5.GYO.Directory/" title="Lots Directory" allowfullscreen></iframe>
-</div>
 
 <!-- ═══════════════════════════════════════════════
      DRAW + RESULT SCREENS
@@ -665,6 +648,7 @@ function goTo(screenId) {
   if (el) { el.style.display = 'flex'; el.classList.add('active'); window.scrollTo(0, 0); }
   if (screenId === 'screen-B2-2-2-T2') resetKwanyin();
   if (screenId === 'screen-gyo-history') renderHistorySlots();
+
 }
 
 // ── JSONP helper ──
