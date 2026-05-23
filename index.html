@@ -78,6 +78,7 @@ button:active, a.card:active, [onclick]:active {
 /* ── GYO Login screen ── */
 #screen-gyo-login {
   background: linear-gradient(180deg, #000073 0%, #00004a 100%);
+  min-height: 100vh;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -1196,11 +1197,11 @@ function kwCopyResultImage(onDoneCallback) {
   // Use the updated GYO portal image
   const gyoImgUrl = 'https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png';
   const tsutsujiUrl = 'https://i.postimg.cc/kXbp4m8s/tsutsuji-Divination-logo-1-glow-green.png';
-  const _picEl = document.getElementById('profile-corner-img');
-  const _profileSrc = (_picEl && _picEl.src && _picEl.src.startsWith('http')) ? _picEl.src : null;
+  // Profile pic is a base64 data URI cached in memory by spgo-core.js — no CORS needed
+  const _profileDataUri = (typeof cachedProfilePicDataUri !== 'undefined') ? cachedProfilePicDataUri : null;
 
   let gyoImg = null, tsutsujiImg = null, profileImg = null;
-  const totalToLoad = 2; // gyo + tsutsuji always; profile pic is bonus, never blocks draw
+  const totalToLoad = 2; // gyo + tsutsuji always; profile pic loads in background
   let loaded = 0;
 
   function onLoaded() {
@@ -1214,28 +1215,6 @@ function kwCopyResultImage(onDoneCallback) {
     img.onload = () => onLoad(img);
     img.onerror = () => { if (onErr) onErr(); };
     img.src = url;
-  }
-
-  function loadProfilePic(src, onLoad) {
-    if (!src) return;
-    // Try fetch+blob first (works if server allows CORS)
-    fetch(src)
-      .then(r => r.blob())
-      .then(blob => {
-        const objUrl = URL.createObjectURL(blob);
-        const img = new Image();
-        img.onload = () => { URL.revokeObjectURL(objUrl); onLoad(img); };
-        img.onerror = () => URL.revokeObjectURL(objUrl);
-        img.src = objUrl;
-      })
-      .catch(() => {
-        // fetch failed - try direct with crossOrigin
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = () => onLoad(img);
-        img.onerror = () => {};
-        img.src = src;
-      });
   }
 
   function draw() {
@@ -1368,8 +1347,10 @@ function kwCopyResultImage(onDoneCallback) {
 
   loadImageCORS(gyoImgUrl, img => { gyoImg = img; onLoaded(); }, () => onLoaded());
   loadImageCORS(tsutsujiUrl, img => { tsutsujiImg = img; onLoaded(); }, () => onLoaded());
-  if (_profileSrc) {
-    loadProfilePic(_profileSrc, img => { profileImg = img; });
+  if (_profileDataUri) {
+    const _pImg = new Image();
+    _pImg.onload = () => { profileImg = _pImg; };
+    _pImg.src = _profileDataUri;
   }
 }
 
