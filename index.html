@@ -1197,11 +1197,10 @@ function kwCopyResultImage(onDoneCallback) {
   const gyoImgUrl = 'https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png';
   const tsutsujiUrl = 'https://i.postimg.cc/kXbp4m8s/tsutsuji-Divination-logo-1-glow-green.png';
   const _picEl = document.getElementById('profile-corner-img');
-  const _picSrc = (_picEl && _picEl.src && _picEl.src.startsWith('http')) ? _picEl.src : null;
-  const profileUrl = _picSrc ? 'https://corsproxy.io/?' + encodeURIComponent(_picSrc) : null;
+  const profileUrl = (_picEl && _picEl.src && _picEl.src.startsWith('http')) ? _picEl.src : null;
 
   let gyoImg = null, tsutsujiImg = null, profileImg = null;
-  const totalToLoad = profileUrl ? 3 : 2;
+  const totalToLoad = 2; // gyo + tsutsuji always; profile pic is bonus, never blocks draw
   let loaded = 0;
 
   function onLoaded() {
@@ -1348,7 +1347,8 @@ function kwCopyResultImage(onDoneCallback) {
   loadImageCORS(gyoImgUrl, img => { gyoImg = img; onLoaded(); }, () => onLoaded());
   loadImageCORS(tsutsujiUrl, img => { tsutsujiImg = img; onLoaded(); }, () => onLoaded());
   if (profileUrl) {
-    loadImageCORS(profileUrl, img => { profileImg = img; onLoaded(); }, () => onLoaded());
+    // Profile pic is bonus - loads in background, drawn if ready when draw() fires
+    loadImageCORS(profileUrl, img => { profileImg = img; }, () => {});
   }
 }
 
