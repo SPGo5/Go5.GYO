@@ -917,7 +917,6 @@ function histCopyImage(idx) {
   const qEl = document.getElementById('kw-question');
   if (qEl) qEl.value = entry.question || '';
   kwCopyResultImage(() => {
-    // Restore
     kwLastNumber = savedNum;
     kwLastSource = savedSrc;
     kwResultDateTime = savedDt;
@@ -1175,10 +1174,11 @@ function kwCopyResultImage(onDoneCallback) {
   const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  // Use the updated GYO portal image
   const gyoImgUrl = 'https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png';
   const tsutsujiUrl = 'https://i.postimg.cc/kXbp4m8s/tsutsuji-Divination-logo-1-glow-green.png';
-  const profileUrl = currentUser ? PROFILE_PIC_BASE + encodeURIComponent(currentUser) + '-Profile-Pic-R.png' : null;
+  // Read profile pic URL directly from the corner img already loaded by spgo-core.js
+  const profileCornerImg = document.getElementById('profile-corner-img');
+  const profileUrl = (profileCornerImg && profileCornerImg.src && profileCornerImg.src.startsWith('http')) ? profileCornerImg.src : null;
 
   let gyoImg = null, tsutsujiImg = null, profileImg = null;
   const totalToLoad = profileUrl ? 3 : 2;
@@ -1192,12 +1192,10 @@ function kwCopyResultImage(onDoneCallback) {
   }
 
   function loadImageCORS(url, onLoad, onErr) {
-    // Try direct CORS first; fall back to no-cors (just to trigger onLoad so draw() fires)
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => onLoad(img);
     img.onerror = () => {
-      // Fallback: try without crossOrigin (won't be drawable but won't stall)
       const img2 = new Image();
       img2.onload = () => onLoad(img2);
       img2.onerror = () => onErr();
@@ -1208,7 +1206,6 @@ function kwCopyResultImage(onDoneCallback) {
 
   function draw() {
     const mid = W / 2;
-    // Background
     const bg = ctx.createLinearGradient(0, 0, 0, H);
     bg.addColorStop(0, '#000073'); bg.addColorStop(1, '#00004a');
     ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
@@ -1222,13 +1219,11 @@ function kwCopyResultImage(onDoneCallback) {
       ctx.restore();
     }
 
-    // Title
     ctx.fillStyle = 'rgba(255,245,220,0.9)';
     ctx.font = '600 ' + px(15) + 'px Cinzel, serif';
     ctx.textAlign = 'center';
     ctx.fillText('Divination (i) Tsutsuji', mid, titleY);
 
-    // GYO image
     if (gyoImg) {
       const ratio = gyoImg.naturalWidth / gyoImg.naturalHeight || 1;
       const iH = imgH, iW = ratio * iH;
@@ -1238,7 +1233,6 @@ function kwCopyResultImage(onDoneCallback) {
       ctx.restore();
     }
 
-    // Kanji
     ctx.fillStyle = '#f5f0e8';
     ctx.font = px(24) + 'px "Klee One", serif';
     ctx.textAlign = 'center';
@@ -1246,57 +1240,48 @@ function kwCopyResultImage(onDoneCallback) {
     ctx.fillText('觀音靈簽', mid, kanjiY);
     ctx.restore();
 
-    // Date
     ctx.fillStyle = 'rgba(255,245,220,0.55)';
     ctx.font = px(11) + 'px Cinzel, serif';
     ctx.textAlign = 'center';
     ctx.fillText(dt, mid, dateY);
 
-    // Box
     const bx = px(20), bw = W - bx*2, by = boxTop, bh = boxH_content;
     ctx.fillStyle = 'rgba(255,255,255,0.07)';
     kwRoundRect(ctx, bx, by, bw, bh, px(12)); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = px(1);
     kwRoundRect(ctx, bx, by, bw, bh, px(12)); ctx.stroke();
 
-    // Question label
     ctx.fillStyle = 'rgba(255,245,220,0.5)';
     ctx.font = px(11) + 'px Cinzel, serif';
     ctx.textAlign = 'left';
     ctx.fillText('THE ANSWER TO YOUR QUESTION:', bx + boxPad, by + boxPadV + px(18));
 
-    // Question text
     ctx.fillStyle = '#00E5FF';
     ctx.font = qFont;
     kwWrapText(ctx, question, bx + boxPad, by + boxPadV + boxLabelH + qLineH * 0.75, boxInnerW, qLineH);
 
-    // "is:"
     ctx.fillStyle = 'rgba(255,245,220,0.5)';
     ctx.font = px(12) + 'px Cinzel, serif';
     const isY = by + boxPadV + boxLabelH + qTextH + px(20);
     ctx.fillText('is:', bx + boxPad, isY);
 
-    // Lot label
     ctx.fillStyle = '#c8a96e';
     ctx.font = '300 ' + px(28) + 'px "Cormorant Garamond", serif';
     const lotLineY = isY + px(32) + px(52);
     ctx.fillText('Lot', bx + boxPad, lotLineY);
 
-    // Lot number
     ctx.fillStyle = '#ccff00';
     ctx.font = '700 ' + px(72) + 'px "Cormorant Garamond", serif';
     ctx.save(); ctx.shadowColor = 'rgba(204,255,0,0.9)'; ctx.shadowBlur = px(8);
     ctx.fillText(String(lotNum), bx + boxPad + px(80), lotLineY);
     ctx.restore();
 
-    // Source note
     const srcLabels = { 'quantum': '⚛️ Quantum', 'random-org': '📡 Atm.', 'crypto': '🔐 Crypto' };
     ctx.fillStyle = 'rgba(255,245,220,0.45)';
     ctx.font = 'italic ' + px(12) + 'px "Crimson Pro", serif';
     ctx.textAlign = 'center';
     ctx.fillText('Randomness provided by ' + (srcLabels[src] || src || 'Unknown'), mid, srcNoteY);
 
-    // Tsutsuji flower image
     if (tsutsujiImg) {
       const tH = px(48), tW = tsutsujiImg.naturalWidth * (tH / tsutsujiImg.naturalHeight) || tH;
       ctx.globalAlpha = 0.85;
@@ -1304,13 +1289,11 @@ function kwCopyResultImage(onDoneCallback) {
       ctx.globalAlpha = 1;
     }
 
-    // Footer text
     ctx.fillStyle = 'rgba(255,245,220,0.2)';
     ctx.font = px(11) + 'px "Cinzel", serif';
     ctx.textAlign = 'center';
     ctx.fillText("You're using Super Portal 五 Go", mid, footerY);
 
-    // Download
     const now = new Date();
     const mm = String(now.getMonth()+1).padStart(2,'0'), dd2 = String(now.getDate()).padStart(2,'0');
     const yy = String(now.getFullYear()).slice(2), hh = String(now.getHours()).padStart(2,'0'), mn = String(now.getMinutes()).padStart(2,'0');
@@ -1340,6 +1323,7 @@ function kwCopyResultImage(onDoneCallback) {
     loadImageCORS(profileUrl, img => { profileImg = img; onLoaded(); }, () => onLoaded());
   }
 }
+
 
 // ── Init ──
 document.addEventListener('click', function(e) {
