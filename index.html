@@ -26,7 +26,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title> 觀音靈簽 GYO (Tsutsuji) </title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Beau+Rivage&family=Ma+Shan+Zheng&family=Klee+One&family=Corinthia&family=Aleo:wght@300;400;700&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
@@ -1197,7 +1197,8 @@ function kwCopyResultImage(onDoneCallback) {
   const gyoImgUrl = 'https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png';
   const tsutsujiUrl = 'https://i.postimg.cc/kXbp4m8s/tsutsuji-Divination-logo-1-glow-green.png';
   const _picEl = document.getElementById('profile-corner-img');
-  const profileUrl = (_picEl && _picEl.src && _picEl.src.startsWith('http')) ? _picEl.src : null;
+  const _picSrc = (_picEl && _picEl.src && _picEl.src.startsWith('http')) ? _picEl.src : null;
+  const profileUrl = _picSrc ? 'https://corsproxy.io/?' + encodeURIComponent(_picSrc) : null;
 
   let gyoImg = null, tsutsujiImg = null, profileImg = null;
   const totalToLoad = profileUrl ? 3 : 2;
