@@ -1209,17 +1209,10 @@ function kwCopyResultImage(onDoneCallback) {
   }
 
   function loadImageCORS(url, onLoad, onErr) {
-    // Try direct CORS first; fall back to no-cors (just to trigger onLoad so draw() fires)
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => onLoad(img);
-    img.onerror = () => {
-      // Fallback: try without crossOrigin (won't be drawable but won't stall)
-      const img2 = new Image();
-      img2.onload = () => onLoad(img2);
-      img2.onerror = () => onErr();
-      img2.src = url + (url.includes('?') ? '&' : '?') + '_t=' + Date.now();
-    };
+    img.onerror = () => { if (onErr) onErr(); };
     img.src = url;
   }
 
