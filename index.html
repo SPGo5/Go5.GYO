@@ -1298,15 +1298,16 @@ function kwCopyResultImage(onDoneCallback) {
     const yy = String(now.getFullYear()).slice(2), hh = String(now.getHours()).padStart(2,'0'), mn = String(now.getMinutes()).padStart(2,'0');
     const link = document.createElement('a');
     link.download = 'GYO ' + (currentUser||'Go') + ' Result Card ' + mm+dd2+yy+' '+hh+mn + '.png';
+    link.style.display = 'none';
+    document.body.appendChild(link);
     canvas.toBlob(function(blob) {
       if (!blob) {
-        // fallback to dataURL
         link.href = canvas.toDataURL('image/png');
         link.click();
       } else {
         link.href = URL.createObjectURL(blob);
         link.click();
-        setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+        setTimeout(() => { URL.revokeObjectURL(link.href); document.body.removeChild(link); }, 5000);
       }
       const imgEl = document.getElementById('kw-img-copy-confirm');
       if (imgEl) { imgEl.style.opacity = '1'; setTimeout(() => imgEl.style.opacity = '0', 2500); }
