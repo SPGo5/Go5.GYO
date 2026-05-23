@@ -460,7 +460,7 @@ button:active, a.card:active, [onclick]:active {
     <div class="card card-tool" onclick="goTo('screen-B2-2-2-T2')">
       <div class="card-icon" style="font-size:32px;">🔮</div>
       <div class="card-text">
-        <div class="card-title">Draw a Lot</div>
+        <div class="card-title">Draw Lots</div>
         <div class="card-desc">Ask a question · Draw your lot</div>
       </div>
       <div class="card-arrow">›</div>
@@ -525,7 +525,7 @@ button:active, a.card:active, [onclick]:active {
 <div id="screen-B2-2-2-T2" class="screen">
   <div class="inner-header" style="max-width:420px; width:100%;">
     <button class="back-btn" onclick="goTo('screen-gyo-menu')">‹</button>
-    <span class="inner-title">Draw a Lot</span>
+    <span class="inner-title">Draw Lots</span>
   </div>
 
   <div id="kw-main-view" style="display:flex; flex-direction:column; align-items:center; width:100%;">
@@ -611,7 +611,7 @@ button:active, a.card:active, [onclick]:active {
       <div style="width:100%; height:1px; background:rgba(255,255,255,0.15); margin-bottom:16px;"></div>
       <div style="display:flex; gap:10px; width:100%; margin-bottom:2px;">
         <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
-          <button onclick="kwCopyResultImage()" style="width:100%; padding:12px 8px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25); color:white; font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.08em; border-radius:10px; cursor:pointer; backdrop-filter:blur(4px);">Copy 📷</button>
+          <button onclick="kwCopyResultImage()" style="width:100%; padding:12px 8px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25); color:white; font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.08em; border-radius:10px; cursor:pointer; backdrop-filter:blur(4px);">Copy Results 📷</button>
           <span id="kw-img-copy-confirm" style="font-size:11px; color:rgba(255,255,255,0.6); font-style:italic; opacity:0; transition:opacity 0.3s; height:16px;">Downloaded!</span>
         </div>
         <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
@@ -878,7 +878,7 @@ function renderHistorySlots() {
         <div class="hist-slot-q">${escHtml(qPreview)}</div>
         <div class="hist-slot-actions">
           <button class="btn-regen" onclick="histRegenerate(${i})">↺ Regenerate</button>
-          <button class="btn-copy-img" onclick="histCopyImage(${i})">Copy 📷</button>
+          <button class="btn-copy-img" onclick="histCopyImage(${i})">Copy Results 📷</button>
           <button class="btn-del" onclick="histDelete(${i})">Delete 🗑️</button>
         </div>
       </div>`;
@@ -895,17 +895,14 @@ function histRegenerate(idx) {
   const arr = histLoad();
   const entry = arr[idx];
   if (!entry) return;
-  // Pre-populate and show result view directly
+  // goTo triggers resetKwanyin which nulls everything — navigate first, restore after
+  goTo('screen-B2-2-2-T2');
   kwLastNumber = entry.lot;
   kwLastSource = entry.source;
   kwResultDateTime = entry.datetime;
-  // Set question in textarea
   const qEl = document.getElementById('kw-question');
   if (qEl) qEl.value = entry.question || '';
-  // Switch to draw screen and show result
-  goTo('screen-B2-2-2-T2');
-  // Slightly deferred so screen transition completes
-  setTimeout(() => kwShowResult(), 80);
+  kwShowResultNoSave();
 }
 
 function histCopyImage(idx) {
@@ -1085,6 +1082,25 @@ function kwShowResult() {
   });
 }
 
+function kwShowResultNoSave() {
+  if (!kwLastNumber) return;
+  const mv = document.getElementById('kw-main-view'); if (mv) mv.style.display = 'none';
+  const rv = document.getElementById('kw-result-view'); if (rv) rv.style.display = 'flex';
+  document.querySelectorAll('.kw-method-card').forEach(c => c.style.animation = 'none');
+  const rawQ = (document.getElementById('kw-question') || {}).value || '';
+  const smartQ = kwSmartCapitalise(rawQ);
+  const qEl = document.getElementById('kw-result-question'); if (qEl) qEl.textContent = smartQ || '(No question entered)';
+  const lotEl = document.getElementById('kw-result-lot-num'); if (lotEl) lotEl.textContent = kwLastNumber;
+  const dtEl = document.getElementById('kw-result-datetime'); if (dtEl) dtEl.textContent = kwResultDateTime;
+  const LOT_BASE = 'https://sites.google.com/view/divinationitsutsuji/%E8%A7%80%E9%9F%B3%E9%9D%88%E7%B0%BD-guan-yin-fortune-divination-quan-%C3%A2m-linh-thi%C3%AAm/lots/';
+  const linkEl = document.getElementById('kw-lot-link'); if (linkEl) linkEl.href = LOT_BASE + kwLastNumber;
+  const linkTextEl = document.getElementById('kw-lot-link-text'); if (linkTextEl) linkTextEl.textContent = 'See what Lot ' + kwLastNumber + ' says ↗';
+  applyTierGating();
+  const srcLabels = { 'quantum': '⚛️ Quantum', 'random-org': '📡 Atm.', 'crypto': '🔐 Crypto' };
+  const srcEl = document.getElementById('kw-result-source'); if (srcEl) srcEl.textContent = 'Randomness provided by ' + (srcLabels[kwLastSource] || kwLastSource || 'Unknown');
+  window.scrollTo(0, 0);
+}
+
 function kwAskAnother() {
   const rv = document.getElementById('kw-result-view'); if (rv) rv.style.display = 'none';
   const mv = document.getElementById('kw-main-view'); if (mv) mv.style.display = 'flex';
@@ -1122,7 +1138,7 @@ function kwWrapText(ctx, text, x, y, maxW, lineH) {
   ctx.fillText(line, x, y);
 }
 
-// ── kwCopyResultImage: fixed to properly load images via CORS proxy + blob approach ──
+// ── kwCopyResultImage ──
 function kwCopyResultImage(onDoneCallback) {
   if (!kwLastNumber) return;
   const rawQ = (document.getElementById('kw-question') || {}).value || '';
@@ -1170,7 +1186,9 @@ function kwCopyResultImage(onDoneCallback) {
 
   function onLoaded() {
     loaded++;
-    if (loaded >= totalToLoad) draw();
+    if (loaded >= totalToLoad) {
+      document.fonts.ready.then(() => draw());
+    }
   }
 
   function loadImageCORS(url, onLoad, onErr) {
@@ -1304,10 +1322,11 @@ function kwCopyResultImage(onDoneCallback) {
       if (!blob) {
         link.href = canvas.toDataURL('image/png');
         link.click();
+        setTimeout(() => { if (link.parentNode) document.body.removeChild(link); }, 1000);
       } else {
         link.href = URL.createObjectURL(blob);
         link.click();
-        setTimeout(() => { URL.revokeObjectURL(link.href); document.body.removeChild(link); }, 5000);
+        setTimeout(() => { URL.revokeObjectURL(link.href); if (link.parentNode) document.body.removeChild(link); }, 5000);
       }
       const imgEl = document.getElementById('kw-img-copy-confirm');
       if (imgEl) { imgEl.style.opacity = '1'; setTimeout(() => imgEl.style.opacity = '0', 2500); }
