@@ -911,17 +911,35 @@ function histRegenerate(idx) {
   const arr = histLoad();
   const entry = arr[idx];
   if (!entry) return;
-  // Pre-populate and show result view directly
+  // goTo calls resetKwanyin which nulls all values - so navigate first
+  goTo('screen-B2-2-2-T2');
+  // Then restore values after reset
   kwLastNumber = entry.lot;
   kwLastSource = entry.source;
   kwResultDateTime = entry.datetime;
-  // Set question in textarea
   const qEl = document.getElementById('kw-question');
   if (qEl) qEl.value = entry.question || '';
-  // Switch to draw screen and show result
-  goTo('screen-B2-2-2-T2');
-  // Slightly deferred so screen transition completes
-  setTimeout(() => kwShowResult(), 80);
+  // Show result without adding duplicate to history
+  kwShowResultNoSave();
+}
+
+function kwShowResultNoSave() {
+  if (!kwLastNumber) return;
+  const mv = document.getElementById('kw-main-view'); if (mv) mv.style.display = 'none';
+  const rv = document.getElementById('kw-result-view'); if (rv) rv.style.display = 'flex';
+  document.querySelectorAll('.kw-method-card').forEach(c => c.style.animation = 'none');
+  const rawQ = (document.getElementById('kw-question') || {}).value || '';
+  const smartQ = kwSmartCapitalise(rawQ);
+  const qEl = document.getElementById('kw-result-question'); if (qEl) qEl.textContent = smartQ || '(No question entered)';
+  const lotEl = document.getElementById('kw-result-lot-num'); if (lotEl) lotEl.textContent = kwLastNumber;
+  const dtEl = document.getElementById('kw-result-datetime'); if (dtEl) dtEl.textContent = kwResultDateTime;
+  const LOT_BASE = 'https://sites.google.com/view/divinationitsutsuji/%E8%A7%80%E9%9F%B3%E9%9D%88%E7%B0%BD-guan-yin-fortune-divination-quan-%C3%A2m-linh-thi%C3%AAm/lots/';
+  const linkEl = document.getElementById('kw-lot-link'); if (linkEl) linkEl.href = LOT_BASE + kwLastNumber;
+  const linkTextEl = document.getElementById('kw-lot-link-text'); if (linkTextEl) linkTextEl.textContent = 'See what Lot ' + kwLastNumber + ' says ↗';
+  applyTierGating();
+  const srcLabels = { 'quantum': '⚛️ Quantum', 'random-org': '📡 Atm.', 'crypto': '🔐 Crypto' };
+  const srcEl = document.getElementById('kw-result-source'); if (srcEl) srcEl.textContent = 'Randomness provided by ' + (srcLabels[kwLastSource] || kwLastSource || 'Unknown');
+  window.scrollTo(0, 0);
 }
 
 function histCopyImage(idx) {
@@ -1178,8 +1196,8 @@ function kwCopyResultImage(onDoneCallback) {
   // Use the updated GYO portal image
   const gyoImgUrl = 'https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png';
   const tsutsujiUrl = 'https://i.postimg.cc/kXbp4m8s/tsutsuji-Divination-logo-1-glow-green.png';
-  const profileCornerImg = document.getElementById('profile-corner-img');
-  const profileUrl = (profileCornerImg && profileCornerImg.src && profileCornerImg.src.startsWith('http')) ? profileCornerImg.src : null;
+  const _picEl = document.getElementById('profile-corner-img');
+  const profileUrl = (_picEl && _picEl.src && _picEl.src.startsWith('http')) ? _picEl.src : null;
 
   let gyoImg = null, tsutsujiImg = null, profileImg = null;
   const totalToLoad = profileUrl ? 3 : 2;
