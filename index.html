@@ -57,6 +57,9 @@ button:active, a.card:active, [onclick]:active {
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.4) !important;
 }
 
+/* Logout popup — hidden by default, shown via JS */
+#logout-popup { display: none; }
+
 /* Logout popup button overrides */
 #logout-popup button {
   background: none;
@@ -219,7 +222,14 @@ button:active, a.card:active, [onclick]:active {
   margin: 4px 0 8px;
 }
 
-
+/* ── Lots Directory screen ── */
+#screen-gyo-directory { padding: 0; }
+#gyo-dir-iframe {
+  width: 100%;
+  border: none;
+  flex: 1;
+  min-height: 100dvh;
+}
 
 /* ── GYO Oracle / Draw screen ── */
 #screen-B2-2-2-T2 { padding-bottom: 60px; }
@@ -460,7 +470,7 @@ button:active, a.card:active, [onclick]:active {
     <div class="card card-tool" onclick="goTo('screen-B2-2-2-T2')">
       <div class="card-icon" style="font-size:32px;">🔮</div>
       <div class="card-text">
-        <div class="card-title">Draw Lots</div>
+        <div class="card-title">Draw a Lot</div>
         <div class="card-desc">Ask a question · Draw your lot</div>
       </div>
       <div class="card-arrow">›</div>
@@ -477,7 +487,7 @@ button:active, a.card:active, [onclick]:active {
     </div>
 
     <!-- Lots Directory -->
-    <div class="card card-ext" onclick="window.location.href='https://spgo5.github.io/Go5.GYO.Directory/'">
+    <div class="card card-ext" onclick="goTo('screen-gyo-directory')">
       <div class="card-icon" style="font-size:32px;">📖</div>
       <div class="card-text">
         <div class="card-title">Lots Directory</div>
@@ -518,6 +528,16 @@ button:active, a.card:active, [onclick]:active {
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════
+     LOTS DIRECTORY SCREEN (embedded)
+     ═══════════════════════════════════════════════ -->
+<div id="screen-gyo-directory" class="screen" style="padding:0;">
+  <div style="width:100%; display:flex; align-items:center; gap:12px; padding:16px 16px 12px; border-bottom:1px solid rgba(255,255,255,0.08); background:rgba(0,0,60,0.95); position:sticky; top:0; z-index:10; box-sizing:border-box;">
+    <button class="back-btn" onclick="goTo('screen-gyo-menu')" style="font-size:26px; background:none; border:none; color:#00BFFF; cursor:pointer; padding:0 6px 0 0; line-height:1; flex-shrink:0;">‹</button>
+    <span style="font-family:'Cinzel',serif; font-size:13px; letter-spacing:0.15em; color:rgba(255,255,255,0.7); text-transform:uppercase;">Lots Directory</span>
+  </div>
+  <iframe id="gyo-dir-iframe" src="https://spgo5.github.io/Go5.GYO.Directory/" title="Lots Directory" allowfullscreen></iframe>
+</div>
 
 <!-- ═══════════════════════════════════════════════
      DRAW + RESULT SCREENS
@@ -525,7 +545,7 @@ button:active, a.card:active, [onclick]:active {
 <div id="screen-B2-2-2-T2" class="screen">
   <div class="inner-header" style="max-width:420px; width:100%;">
     <button class="back-btn" onclick="goTo('screen-gyo-menu')">‹</button>
-    <span class="inner-title">Draw Lots</span>
+    <span class="inner-title">Draw a Lot</span>
   </div>
 
   <div id="kw-main-view" style="display:flex; flex-direction:column; align-items:center; width:100%;">
@@ -611,7 +631,7 @@ button:active, a.card:active, [onclick]:active {
       <div style="width:100%; height:1px; background:rgba(255,255,255,0.15); margin-bottom:16px;"></div>
       <div style="display:flex; gap:10px; width:100%; margin-bottom:2px;">
         <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
-          <button onclick="kwCopyResultImage()" style="width:100%; padding:12px 8px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25); color:white; font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.08em; border-radius:10px; cursor:pointer; backdrop-filter:blur(4px);">Copy Results 📷</button>
+          <button onclick="kwCopyResultImage()" style="width:100%; padding:12px 8px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25); color:white; font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.08em; border-radius:10px; cursor:pointer; backdrop-filter:blur(4px);">Copy 📷</button>
           <span id="kw-img-copy-confirm" style="font-size:11px; color:rgba(255,255,255,0.6); font-style:italic; opacity:0; transition:opacity 0.3s; height:16px;">Downloaded!</span>
         </div>
         <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
@@ -648,7 +668,6 @@ function goTo(screenId) {
   if (el) { el.style.display = 'flex'; el.classList.add('active'); window.scrollTo(0, 0); }
   if (screenId === 'screen-B2-2-2-T2') resetKwanyin();
   if (screenId === 'screen-gyo-history') renderHistorySlots();
-
 }
 
 // ── JSONP helper ──
@@ -878,7 +897,7 @@ function renderHistorySlots() {
         <div class="hist-slot-q">${escHtml(qPreview)}</div>
         <div class="hist-slot-actions">
           <button class="btn-regen" onclick="histRegenerate(${i})">↺ Regenerate</button>
-          <button class="btn-copy-img" onclick="histCopyImage(${i})">Copy Results 📷</button>
+          <button class="btn-copy-img" onclick="histCopyImage(${i})">Copy 📷</button>
           <button class="btn-del" onclick="histDelete(${i})">Delete 🗑️</button>
         </div>
       </div>`;
@@ -895,14 +914,17 @@ function histRegenerate(idx) {
   const arr = histLoad();
   const entry = arr[idx];
   if (!entry) return;
-  // goTo triggers resetKwanyin which nulls everything — navigate first, restore after
-  goTo('screen-B2-2-2-T2');
+  // Pre-populate and show result view directly
   kwLastNumber = entry.lot;
   kwLastSource = entry.source;
   kwResultDateTime = entry.datetime;
+  // Set question in textarea
   const qEl = document.getElementById('kw-question');
   if (qEl) qEl.value = entry.question || '';
-  kwShowResultNoSave();
+  // Switch to draw screen and show result
+  goTo('screen-B2-2-2-T2');
+  // Slightly deferred so screen transition completes
+  setTimeout(() => kwShowResult(), 80);
 }
 
 function histCopyImage(idx) {
@@ -917,6 +939,7 @@ function histCopyImage(idx) {
   const qEl = document.getElementById('kw-question');
   if (qEl) qEl.value = entry.question || '';
   kwCopyResultImage(() => {
+    // Restore
     kwLastNumber = savedNum;
     kwLastSource = savedSrc;
     kwResultDateTime = savedDt;
@@ -1081,25 +1104,6 @@ function kwShowResult() {
   });
 }
 
-function kwShowResultNoSave() {
-  if (!kwLastNumber) return;
-  const mv = document.getElementById('kw-main-view'); if (mv) mv.style.display = 'none';
-  const rv = document.getElementById('kw-result-view'); if (rv) rv.style.display = 'flex';
-  document.querySelectorAll('.kw-method-card').forEach(c => c.style.animation = 'none');
-  const rawQ = (document.getElementById('kw-question') || {}).value || '';
-  const smartQ = kwSmartCapitalise(rawQ);
-  const qEl = document.getElementById('kw-result-question'); if (qEl) qEl.textContent = smartQ || '(No question entered)';
-  const lotEl = document.getElementById('kw-result-lot-num'); if (lotEl) lotEl.textContent = kwLastNumber;
-  const dtEl = document.getElementById('kw-result-datetime'); if (dtEl) dtEl.textContent = kwResultDateTime;
-  const LOT_BASE = 'https://sites.google.com/view/divinationitsutsuji/%E8%A7%80%E9%9F%B3%E9%9D%88%E7%B0%BD-guan-yin-fortune-divination-quan-%C3%A2m-linh-thi%C3%AAm/lots/';
-  const linkEl = document.getElementById('kw-lot-link'); if (linkEl) linkEl.href = LOT_BASE + kwLastNumber;
-  const linkTextEl = document.getElementById('kw-lot-link-text'); if (linkTextEl) linkTextEl.textContent = 'See what Lot ' + kwLastNumber + ' says ↗';
-  applyTierGating();
-  const srcLabels = { 'quantum': '⚛️ Quantum', 'random-org': '📡 Atm.', 'crypto': '🔐 Crypto' };
-  const srcEl = document.getElementById('kw-result-source'); if (srcEl) srcEl.textContent = 'Randomness provided by ' + (srcLabels[kwLastSource] || kwLastSource || 'Unknown');
-  window.scrollTo(0, 0);
-}
-
 function kwAskAnother() {
   const rv = document.getElementById('kw-result-view'); if (rv) rv.style.display = 'none';
   const mv = document.getElementById('kw-main-view'); if (mv) mv.style.display = 'flex';
@@ -1137,7 +1141,7 @@ function kwWrapText(ctx, text, x, y, maxW, lineH) {
   ctx.fillText(line, x, y);
 }
 
-// ── kwCopyResultImage ──
+// ── kwCopyResultImage: fixed to properly load images via CORS proxy + blob approach ──
 function kwCopyResultImage(onDoneCallback) {
   if (!kwLastNumber) return;
   const rawQ = (document.getElementById('kw-question') || {}).value || '';
@@ -1174,9 +1178,9 @@ function kwCopyResultImage(onDoneCallback) {
   const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
+  // Use the updated GYO portal image
   const gyoImgUrl = 'https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png';
   const tsutsujiUrl = 'https://i.postimg.cc/kXbp4m8s/tsutsuji-Divination-logo-1-glow-green.png';
-  // Read profile pic URL directly from the corner img already loaded by spgo-core.js
   const profileCornerImg = document.getElementById('profile-corner-img');
   const profileUrl = (profileCornerImg && profileCornerImg.src && profileCornerImg.src.startsWith('http')) ? profileCornerImg.src : null;
 
@@ -1186,16 +1190,16 @@ function kwCopyResultImage(onDoneCallback) {
 
   function onLoaded() {
     loaded++;
-    if (loaded >= totalToLoad) {
-      document.fonts.ready.then(() => draw());
-    }
+    if (loaded >= totalToLoad) draw();
   }
 
   function loadImageCORS(url, onLoad, onErr) {
+    // Try direct CORS first; fall back to no-cors (just to trigger onLoad so draw() fires)
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => onLoad(img);
     img.onerror = () => {
+      // Fallback: try without crossOrigin (won't be drawable but won't stall)
       const img2 = new Image();
       img2.onload = () => onLoad(img2);
       img2.onerror = () => onErr();
@@ -1206,6 +1210,7 @@ function kwCopyResultImage(onDoneCallback) {
 
   function draw() {
     const mid = W / 2;
+    // Background
     const bg = ctx.createLinearGradient(0, 0, 0, H);
     bg.addColorStop(0, '#000073'); bg.addColorStop(1, '#00004a');
     ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
@@ -1219,11 +1224,13 @@ function kwCopyResultImage(onDoneCallback) {
       ctx.restore();
     }
 
+    // Title
     ctx.fillStyle = 'rgba(255,245,220,0.9)';
     ctx.font = '600 ' + px(15) + 'px Cinzel, serif';
     ctx.textAlign = 'center';
     ctx.fillText('Divination (i) Tsutsuji', mid, titleY);
 
+    // GYO image
     if (gyoImg) {
       const ratio = gyoImg.naturalWidth / gyoImg.naturalHeight || 1;
       const iH = imgH, iW = ratio * iH;
@@ -1233,6 +1240,7 @@ function kwCopyResultImage(onDoneCallback) {
       ctx.restore();
     }
 
+    // Kanji
     ctx.fillStyle = '#f5f0e8';
     ctx.font = px(24) + 'px "Klee One", serif';
     ctx.textAlign = 'center';
@@ -1240,48 +1248,57 @@ function kwCopyResultImage(onDoneCallback) {
     ctx.fillText('觀音靈簽', mid, kanjiY);
     ctx.restore();
 
+    // Date
     ctx.fillStyle = 'rgba(255,245,220,0.55)';
     ctx.font = px(11) + 'px Cinzel, serif';
     ctx.textAlign = 'center';
     ctx.fillText(dt, mid, dateY);
 
+    // Box
     const bx = px(20), bw = W - bx*2, by = boxTop, bh = boxH_content;
     ctx.fillStyle = 'rgba(255,255,255,0.07)';
     kwRoundRect(ctx, bx, by, bw, bh, px(12)); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = px(1);
     kwRoundRect(ctx, bx, by, bw, bh, px(12)); ctx.stroke();
 
+    // Question label
     ctx.fillStyle = 'rgba(255,245,220,0.5)';
     ctx.font = px(11) + 'px Cinzel, serif';
     ctx.textAlign = 'left';
     ctx.fillText('THE ANSWER TO YOUR QUESTION:', bx + boxPad, by + boxPadV + px(18));
 
+    // Question text
     ctx.fillStyle = '#00E5FF';
     ctx.font = qFont;
     kwWrapText(ctx, question, bx + boxPad, by + boxPadV + boxLabelH + qLineH * 0.75, boxInnerW, qLineH);
 
+    // "is:"
     ctx.fillStyle = 'rgba(255,245,220,0.5)';
     ctx.font = px(12) + 'px Cinzel, serif';
     const isY = by + boxPadV + boxLabelH + qTextH + px(20);
     ctx.fillText('is:', bx + boxPad, isY);
 
+    // Lot label
     ctx.fillStyle = '#c8a96e';
     ctx.font = '300 ' + px(28) + 'px "Cormorant Garamond", serif';
     const lotLineY = isY + px(32) + px(52);
     ctx.fillText('Lot', bx + boxPad, lotLineY);
 
+    // Lot number
     ctx.fillStyle = '#ccff00';
     ctx.font = '700 ' + px(72) + 'px "Cormorant Garamond", serif';
     ctx.save(); ctx.shadowColor = 'rgba(204,255,0,0.9)'; ctx.shadowBlur = px(8);
     ctx.fillText(String(lotNum), bx + boxPad + px(80), lotLineY);
     ctx.restore();
 
+    // Source note
     const srcLabels = { 'quantum': '⚛️ Quantum', 'random-org': '📡 Atm.', 'crypto': '🔐 Crypto' };
     ctx.fillStyle = 'rgba(255,245,220,0.45)';
     ctx.font = 'italic ' + px(12) + 'px "Crimson Pro", serif';
     ctx.textAlign = 'center';
     ctx.fillText('Randomness provided by ' + (srcLabels[src] || src || 'Unknown'), mid, srcNoteY);
 
+    // Tsutsuji flower image
     if (tsutsujiImg) {
       const tH = px(48), tW = tsutsujiImg.naturalWidth * (tH / tsutsujiImg.naturalHeight) || tH;
       ctx.globalAlpha = 0.85;
@@ -1289,11 +1306,13 @@ function kwCopyResultImage(onDoneCallback) {
       ctx.globalAlpha = 1;
     }
 
+    // Footer text
     ctx.fillStyle = 'rgba(255,245,220,0.2)';
     ctx.font = px(11) + 'px "Cinzel", serif';
     ctx.textAlign = 'center';
     ctx.fillText("You're using Super Portal 五 Go", mid, footerY);
 
+    // Download
     const now = new Date();
     const mm = String(now.getMonth()+1).padStart(2,'0'), dd2 = String(now.getDate()).padStart(2,'0');
     const yy = String(now.getFullYear()).slice(2), hh = String(now.getHours()).padStart(2,'0'), mn = String(now.getMinutes()).padStart(2,'0');
@@ -1323,7 +1342,6 @@ function kwCopyResultImage(onDoneCallback) {
     loadImageCORS(profileUrl, img => { profileImg = img; onLoaded(); }, () => onLoaded());
   }
 }
-
 
 // ── Init ──
 document.addEventListener('click', function(e) {
