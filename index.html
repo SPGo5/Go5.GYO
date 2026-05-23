@@ -1197,7 +1197,7 @@ function kwCopyResultImage(onDoneCallback) {
   const gyoImgUrl = 'https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png';
   const tsutsujiUrl = 'https://i.postimg.cc/kXbp4m8s/tsutsuji-Divination-logo-1-glow-green.png';
   const _picEl = document.getElementById('profile-corner-img');
-  const profileUrl = (_picEl && _picEl.src && _picEl.src.startsWith('http')) ? _picEl.src : null;
+  const _profileSrc = (_picEl && _picEl.src && _picEl.src.startsWith('http')) ? _picEl.src : null;
 
   let gyoImg = null, tsutsujiImg = null, profileImg = null;
   const totalToLoad = 2; // gyo + tsutsuji always; profile pic is bonus, never blocks draw
@@ -1214,6 +1214,28 @@ function kwCopyResultImage(onDoneCallback) {
     img.onload = () => onLoad(img);
     img.onerror = () => { if (onErr) onErr(); };
     img.src = url;
+  }
+
+  function loadProfilePic(src, onLoad) {
+    if (!src) return;
+    // Try fetch+blob first (works if server allows CORS)
+    fetch(src)
+      .then(r => r.blob())
+      .then(blob => {
+        const objUrl = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => { URL.revokeObjectURL(objUrl); onLoad(img); };
+        img.onerror = () => URL.revokeObjectURL(objUrl);
+        img.src = objUrl;
+      })
+      .catch(() => {
+        // fetch failed - try direct with crossOrigin
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => onLoad(img);
+        img.onerror = () => {};
+        img.src = src;
+      });
   }
 
   function draw() {
@@ -1346,9 +1368,8 @@ function kwCopyResultImage(onDoneCallback) {
 
   loadImageCORS(gyoImgUrl, img => { gyoImg = img; onLoaded(); }, () => onLoaded());
   loadImageCORS(tsutsujiUrl, img => { tsutsujiImg = img; onLoaded(); }, () => onLoaded());
-  if (profileUrl) {
-    // Profile pic is bonus - loads in background, drawn if ready when draw() fires
-    loadImageCORS(profileUrl, img => { profileImg = img; }, () => {});
+  if (_profileSrc) {
+    loadProfilePic(_profileSrc, img => { profileImg = img; });
   }
 }
 
