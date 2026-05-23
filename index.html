@@ -57,14 +57,6 @@ button:active, a.card:active, [onclick]:active {
   box-shadow: inset 0 2px 6px rgba(0,0,0,0.4) !important;
 }
 
-/* Profile corner — sized locally in case spgo-core.css unavailable */
-#profile-corner { display: none; position: fixed; top: 12px; right: 14px; z-index: 9999; flex-direction: column; align-items: center; cursor: pointer; }
-#profile-corner img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
-#profile-corner img.flower-pic { border-radius: 0; object-fit: contain; width: 42px; height: 42px; }
-
-/* Logout popup — hidden by default, shown via JS */
-#logout-popup { display: none; }
-
 /* Logout popup button overrides */
 #logout-popup button {
   background: none;
