@@ -1,8 +1,3 @@
-Set 5 says when revising **code**, return the **entire piece in full**.
-
-Here's the complete corrected manifest:
-
-```json
 {
   "name": "五 Go — 觀音靈簽 GYO",
   "short_name": "GYO Oracle",
@@ -31,6 +26,3 @@ Here's the complete corrected manifest:
     }
   ]
 }
-```
-
-Sorry for the previous partial snippet.
