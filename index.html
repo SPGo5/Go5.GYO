@@ -294,9 +294,8 @@ button:active, a.card:active, [onclick]:active {
 .kw-method-desc { font-size: clamp(9px, 2.5vw, 14px); font-style: italic; color: #000073; }
 
 .kw-stage {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 14px;
+  background: none;
+  border: none;
   padding: 24px 20px 28px;
   text-align: center;
   width: 100%;
@@ -370,6 +369,44 @@ button:active, a.card:active, [onclick]:active {
   25% { content:'.'; }
   50% { content:'..'; }
   75% { content:'...'; }
+}
+
+/* ── Lot number flash overlay ── */
+#kw-flash-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: linear-gradient(180deg, #000073 0%, #00004a 100%);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: kwFlashIn 0.3s ease;
+}
+@keyframes kwFlashIn {
+  0% { opacity: 0; transform: scale(0.92); }
+  100% { opacity: 1; transform: scale(1); }
+}
+#kw-flash-number {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 700;
+  font-size: clamp(120px, 40vw, 240px);
+  line-height: 1;
+  color: #ccff00;
+  text-shadow: 0 0 20px rgba(204,255,0,0.95), 0 0 60px rgba(204,255,0,0.6), 0 0 120px rgba(204,255,0,0.3);
+  animation: kwFlashPulse 0.6s ease-in-out infinite alternate;
+}
+@keyframes kwFlashPulse {
+  0% { text-shadow: 0 0 20px rgba(204,255,0,0.95), 0 0 60px rgba(204,255,0,0.6); }
+  100% { text-shadow: 0 0 40px rgba(204,255,0,1), 0 0 100px rgba(204,255,0,0.9), 0 0 160px rgba(204,255,0,0.5); }
+}
+#kw-flash-label {
+  font-family: 'Cinzel', serif;
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  color: rgba(255,245,220,0.6);
+  margin-top: 16px;
+  text-transform: uppercase;
 }
 </style>
 </head>
@@ -1072,11 +1109,23 @@ async function kwDraw() {
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     kwResultDateTime = months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear()
       + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
-    const fates = { crypto: 'Hardware entropy has decided:', 'random-org': 'The atmosphere has chosen:', quantum: 'Quantum chance has decided:' };
-    if (fateEl) fateEl.textContent = fates[sourceUsed];
-    if (statusEl && !statusEl.textContent.includes('unreachable')) statusEl.textContent = '';
     btn.disabled = false; btn.textContent = 'Draw a lot'; kwIsDrawing = false;
-    const printBtn = document.getElementById('kw-print-btn'); if (printBtn) printBtn.style.display = 'inline-flex';
+    // Flash the number fullscreen then auto-show result
+    const fateLabels = { crypto: 'Hardware entropy has decided', 'random-org': 'The atmosphere has chosen', quantum: 'Quantum chance has decided' };
+    const overlay = document.getElementById('kw-flash-overlay');
+    const flashNum = document.getElementById('kw-flash-number');
+    const flashLabel = document.getElementById('kw-flash-label');
+    if (overlay && flashNum) {
+      flashNum.textContent = number;
+      if (flashLabel) flashLabel.textContent = fateLabels[sourceUsed] || 'The oracle has spoken';
+      overlay.style.display = 'flex';
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        kwShowResult();
+      }, 1500);
+    } else {
+      kwShowResult();
+    }
   } catch(err) {
     if (fateEl) fateEl.textContent = 'The oracle is silent';
     if (statusEl) statusEl.textContent = 'Error: ' + err.message;
@@ -1379,5 +1428,11 @@ if (document.readyState === 'loading') {
   }, function() {});
 }
 </script>
+
+<!-- Lot number flash overlay -->
+<div id="kw-flash-overlay">
+  <div id="kw-flash-number"></div>
+  <div id="kw-flash-label">Quantum chance has decided</div>
+</div>
 </body>
 </html>
