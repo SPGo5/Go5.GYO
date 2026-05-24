@@ -20,6 +20,12 @@
   5. Portal-specific CSS (e.g. map, chart viewer) is
      allowed in the local <style> block only if it does
      not override any shared token or class.
+  6. NEVER redeclare spgo-core.js globals with let/const/var.
+     Assign only. Redeclaring causes SyntaxError, crashes login.
+  7. NEVER call updateProfileCorner() inside a portal's
+     setHomeState() override. spgo-core.js calls it after
+     setHomeState() returns. Duplicate calls cause profile
+     pic to flash then disappear.
   ════════════════════════════════════════════════════════════
 -->
 <!DOCTYPE html>
@@ -822,7 +828,6 @@ function checkOAuthReturn() {
 // ── Set home state: show splash then menu ──
 function setHomeState() {
   goTo('screen-B2-2-2-splash');
-  updateProfileCorner();
   applyTierGating();
 }
 
