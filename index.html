@@ -49,6 +49,24 @@
 
 /* ── GYO Portal-specific CSS only ── */
 
+/* Back button destination label — auto-set by goTo() from data-screen-name */
+.back-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.back-btn-label {
+  font-family: 'Cinzel', serif;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  color: rgba(0,191,255,0.6);
+  text-transform: uppercase;
+  white-space: nowrap;
+  line-height: 1;
+  margin-top: 2px;
+  display: block;
+}
+
 /* Touch feedback */
 button:active, a.card:active, [onclick]:active {
   opacity: 0.75 !important;
@@ -461,7 +479,7 @@ button:active, a.card:active, [onclick]:active {
 <!-- ═══════════════════════════════════════════════
      LOGIN SCREEN
      ═══════════════════════════════════════════════ -->
-<div id="screen-gyo-login" class="screen active">
+<div id="screen-gyo-login" class="screen active" data-screen-name="Login">
   <img src="https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png" alt="GYO"
     style="width:120px;height:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(204,255,0,0.9)) drop-shadow(0 0 28px rgba(204,255,0,0.5));margin-bottom:20px;">
   <div style="font-family:'Klee One','Ma Shan Zheng',cursive;font-size:26px;color:#f5f0e8;text-shadow:0 0 8px rgba(255,245,80,0.8);margin-bottom:6px;">觀音靈簽</div>
@@ -476,13 +494,13 @@ button:active, a.card:active, [onclick]:active {
 </div>
 
 <!-- VERIFYING SCREEN -->
-<div id="screen-gyo-verify" class="screen" style="justify-content:center;gap:20px;">
+<div id="screen-gyo-verify" class="screen" style="justify-content:center;gap:20px;" data-screen-name="Verifying">
   <img src="https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png" class="sp-loading-img" style="width:80px;height:auto;object-fit:contain;">
   <div class="sp-loading">Loading…</div>
 </div>
 
 <!-- GYO SPLASH SCREEN -->
-<div id="screen-B2-2-2-splash" class="screen" style="padding:0; position:relative; overflow:hidden;">
+<div id="screen-B2-2-2-splash" class="screen" style="padding:0; position:relative; overflow:hidden;" data-screen-name="GYO">
   <div style="position:absolute; inset:0; background-image: url('https://i.postimg.cc/QNzjqmR1/Draw-AKwan-Yin-Lot.png'); background-size: auto 100%; background-repeat: no-repeat; background-position: center; z-index:0;"></div>
   <div style="position:absolute; inset:0; background: rgba(0,0,50,0.45); z-index:1;"></div>
   <div style="position:relative; z-index:2; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100dvh; padding: 40px 20px; text-align:center;" onclick="gyoEnter()">
@@ -499,7 +517,7 @@ button:active, a.card:active, [onclick]:active {
 <!-- ═══════════════════════════════════════════════
      GYO HOME MENU SCREEN
      ═══════════════════════════════════════════════ -->
-<div id="screen-gyo-menu" class="screen">
+<div id="screen-gyo-menu" class="screen" data-screen-name="GYO Main Menu">
   <div class="gyo-menu-logo">
     <img src="https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png" alt="GYO">
     <div class="gyo-menu-logo-title">觀音靈簽</div>
@@ -511,7 +529,7 @@ button:active, a.card:active, [onclick]:active {
     <div class="card card-tool" onclick="goTo('screen-B2-2-2-T2')">
       <div class="card-icon" style="font-size:32px;">🔮</div>
       <div class="card-text">
-        <div class="card-title">Draw a Lot</div>
+        <div class="card-title">Draw Lots</div>
         <div class="card-desc">Ask a question · Draw your lot</div>
       </div>
       <div class="card-arrow">›</div>
@@ -551,13 +569,13 @@ button:active, a.card:active, [onclick]:active {
 <!-- ═══════════════════════════════════════════════
      PREVIOUSLY DRAWN LOTS — HISTORY SCREEN
      ═══════════════════════════════════════════════ -->
-<div id="screen-gyo-history" class="screen">
+<div id="screen-gyo-history" class="screen" data-screen-name="Previously Drawn Lots">
   <div class="inner-header" style="max-width:420px; width:100%;">
-    <button class="back-btn" onclick="goTo('screen-gyo-menu')">‹</button>
+    <button class="back-btn" onclick="goTo('screen-gyo-menu')">‹<span class="back-btn-label"></span></button>
     <span class="inner-title">Previously Drawn Lots</span>
   </div>
 
-  <p class="hist-privacy-note">Your last 5 draws are only saved locally on this device.</p>
+  <p class="hist-privacy-note">Your last 5 draws are saved locally ONLY on this device. If you clear browser cache, they will be gone.</p>
 
   <div id="hist-slots-container" style="width:100%; max-width:420px;">
     <!-- slots rendered by JS -->
@@ -572,9 +590,9 @@ button:active, a.card:active, [onclick]:active {
 <!-- ═══════════════════════════════════════════════
      LOTS DIRECTORY SCREEN (embedded)
      ═══════════════════════════════════════════════ -->
-<div id="screen-gyo-directory" class="screen" style="padding:0;">
+<div id="screen-gyo-directory" class="screen" style="padding:0;" data-screen-name="Lots Directory">
   <div style="width:100%; display:flex; align-items:center; gap:12px; padding:16px 16px 12px; border-bottom:1px solid rgba(255,255,255,0.08); background:rgba(0,0,60,0.95); position:sticky; top:0; z-index:10; box-sizing:border-box;">
-    <button class="back-btn" onclick="goTo('screen-gyo-menu')" style="font-size:26px; background:none; border:none; color:#00BFFF; cursor:pointer; padding:0 6px 0 0; line-height:1; flex-shrink:0;">‹</button>
+    <button class="back-btn" onclick="goTo('screen-gyo-menu')" style="font-size:26px; background:none; border:none; color:#00BFFF; cursor:pointer; padding:0 6px 0 0; line-height:1; flex-shrink:0;">‹<span class="back-btn-label"></span></button>
     <span style="font-family:'Cinzel',serif; font-size:13px; letter-spacing:0.15em; color:rgba(255,255,255,0.7); text-transform:uppercase;">Lots Directory</span>
   </div>
   <iframe id="gyo-dir-iframe" src="https://spgo5.github.io/Go5.GYO.Directory/" title="Lots Directory" allowfullscreen></iframe>
@@ -583,10 +601,10 @@ button:active, a.card:active, [onclick]:active {
 <!-- ═══════════════════════════════════════════════
      DRAW + RESULT SCREENS
      ═══════════════════════════════════════════════ -->
-<div id="screen-B2-2-2-T2" class="screen">
+<div id="screen-B2-2-2-T2" class="screen" data-screen-name="Draw Lots">
   <div class="inner-header" style="max-width:420px; width:100%;">
-    <button class="back-btn" onclick="goTo('screen-gyo-menu')">‹</button>
-    <span class="inner-title">Draw a Lot</span>
+    <button class="back-btn" onclick="goTo('screen-gyo-menu')">‹<span class="back-btn-label"></span></button>
+    <span class="inner-title">Draw Lots</span>
   </div>
 
   <div id="kw-main-view" style="display:flex; flex-direction:column; align-items:center; width:100%;">
@@ -620,25 +638,14 @@ button:active, a.card:active, [onclick]:active {
 
     <div class="kw-stage">
       <p style="font-size:14px; font-style:italic; color:rgba(255,245,220,0.75); text-align:center; margin-bottom:18px; line-height:1.6;">Focus your mind on your question</p>
-      <button class="kw-btn" id="kw-btn" onclick="kwDraw()">Draw a lot</button>
+      <button class="kw-btn" id="kw-btn" onclick="kwDraw()">Draw Lots</button>
       <div class="kw-fate" id="kw-fate" style="margin-top:20px; min-height:22px;"></div>
       <div class="kw-status" id="kw-status"></div>
       <div class="kw-number" id="kw-number" style="display:none;" style="margin-top:8px; color:#ccff00; font-family:'Cormorant Garamond',serif; font-weight:700; font-size:128px; line-height:1; text-shadow:0 0 8px rgba(204,255,0,0.95), 0 0 30px rgba(204,255,0,0.6), 0 0 60px rgba(204,255,0,0.3);">—</div>
       <button id="kw-print-btn" onclick="kwShowResult()" style="display:none; margin-top:20px; font-family:'Cinzel',serif; font-size:13px; letter-spacing:0.12em; color:#000073; background:#00BFFF; border:none; border-radius:10px; padding:12px 28px; cursor:pointer; font-weight:700;">Print the Result</button>
     </div>
 
-    <!-- Unreachable popup -->
-    <div id="kw-unreachable-popup" style="display:none; width:100%; max-width:420px; margin-top:16px; background:rgba(0,0,0,0.5); border:1px solid rgba(255,100,100,0.4); border-radius:14px; padding:20px 18px; text-align:center;">
-      <div style="font-family:'Cinzel',serif; font-size:13px; color:#ff8a80; letter-spacing:0.08em; margin-bottom:6px;">⚠ Quantum source unreachable</div>
-      <div style="font-family:'Crimson Pro',serif; font-size:13px; font-style:italic; color:rgba(255,255,255,0.6); margin-bottom:16px;">The quantum vacuum API is not responding at this moment.</div>
-      <div style="display:flex; flex-direction:column; gap:10px;">
-        <button onclick="kwRetryQuantum()" style="width:100%; padding:12px; background:rgba(0,191,255,0.15); border:1px solid rgba(0,191,255,0.4); color:#00BFFF; font-family:'Cinzel',serif; font-size:12px; letter-spacing:0.1em; border-radius:10px; cursor:pointer;">↺ Try Again</button>
-        <div style="display:flex; gap:10px;">
-          <button onclick="kwSwitchTo('random-org')" style="flex:1; padding:12px 8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.8); font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.08em; border-radius:10px; cursor:pointer;">📡 Use Atm.</button>
-          <button onclick="kwSwitchTo('crypto')" style="flex:1; padding:12px 8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.8); font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.08em; border-radius:10px; cursor:pointer;">🔐 Use Crypto</button>
-        </div>
-      </div>
-    </div>
+    <!-- Unreachable popup moved to fixed modal outside screen -->
 
     <div style="text-align:center; margin-top:32px; padding-bottom:16px;">
       <img src="https://i.postimg.cc/kXbp4m8s/tsutsuji-Divination-logo-1-glow-green.png" alt="Tsutsuji" style="width:72px; height:auto; object-fit:contain; opacity:0.85;">
@@ -701,12 +708,33 @@ button:active, a.card:active, [onclick]:active {
 
 // ── Screen navigation ──
 function goTo(screenId) {
+  // Capture name of the currently active screen before switching
+  const prevScreen = document.querySelector('.screen.active');
+  const prevName = prevScreen ? (prevScreen.dataset.screenName || '') : '';
+
   document.querySelectorAll('.screen').forEach(s => {
     s.classList.remove('active');
     s.style.display = 'none';
   });
   const el = document.getElementById(screenId);
   if (el) { el.style.display = 'flex'; el.classList.add('active'); window.scrollTo(0, 0); }
+
+  // Auto-label every back-btn in the new screen with the destination screen name
+  if (el) {
+    el.querySelectorAll('.back-btn').forEach(btn => {
+      const label = btn.querySelector('.back-btn-label');
+      if (!label) return;
+      // Derive destination from the onclick attribute
+      const onclickAttr = btn.getAttribute('onclick') || '';
+      const match = onclickAttr.match(/goTo\(['"]([^'"]+)['"]\)/);
+      if (match) {
+        const destEl = document.getElementById(match[1]);
+        const destName = destEl ? (destEl.dataset.screenName || '') : '';
+        label.textContent = destName;
+      }
+    });
+  }
+
   if (screenId === 'screen-B2-2-2-T2') resetKwanyin();
   if (screenId === 'screen-gyo-history') renderHistorySlots();
 }
@@ -925,7 +953,7 @@ function renderHistorySlots() {
       </div>`;
     } else {
       const warn = (isLast && arr.length === HIST_MAX)
-        ? `<div class="hist-replace-warn">Next draw will replace this card. Download the PNG to keep it permanently.</div>`
+        ? `<div class="hist-replace-warn">Next draw will replace this card. 'Copy 📷' to save it permanently in PNG images.</div>`
         : '';
       const qPreview = getQuestionPreview(entry.question);
       html += `${warn}<div class="hist-slot" id="hist-slot-${i}">
@@ -1043,7 +1071,7 @@ function resetKwanyin() {
   const statusEl = document.getElementById('kw-status'); if (statusEl) statusEl.textContent = '';
   const qEl = document.getElementById('kw-question'); if (qEl) qEl.value = '';
   const printBtn = document.getElementById('kw-print-btn'); if (printBtn) printBtn.style.display = 'none';
-  const btn = document.getElementById('kw-btn'); if (btn) { btn.disabled = false; btn.textContent = 'Draw a lot'; }
+  const btn = document.getElementById('kw-btn'); if (btn) { btn.disabled = false; btn.textContent = 'Draw Lots'; }
   kwSelectedMethod = 'quantum'; kwIsDrawing = false;
   document.querySelectorAll('.kw-method-card').forEach(c => c.classList.remove('active'));
   const qCard = document.getElementById('kw-card-quantum'); if (qCard) qCard.classList.add('active');
@@ -1092,9 +1120,9 @@ async function kwDraw() {
       try { number = await quantumFetchN(100); }
       catch {
         if (statusEl) statusEl.textContent = '';
-        btn.disabled = false; btn.textContent = 'Draw a lot'; kwIsDrawing = false;
+        btn.disabled = false; btn.textContent = 'Draw Lots'; kwIsDrawing = false;
         const popup2 = document.getElementById('kw-unreachable-popup');
-        if (popup2) popup2.style.display = 'block';
+        if (popup2) popup2.style.display = 'flex';
         return;
       }
     }
@@ -1114,7 +1142,7 @@ async function kwDraw() {
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     kwResultDateTime = months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear()
       + ' ' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
-    btn.disabled = false; btn.textContent = 'Draw a lot'; kwIsDrawing = false;
+    btn.disabled = false; btn.textContent = 'Draw Lots'; kwIsDrawing = false;
     // Flash the number fullscreen then auto-show result
     const fateLabels = { crypto: 'Hardware entropy has decided', 'random-org': 'The atmosphere has chosen', quantum: 'Quantum chance has decided' };
     const overlay = document.getElementById('kw-flash-overlay');
@@ -1134,7 +1162,7 @@ async function kwDraw() {
   } catch(err) {
     if (fateEl) fateEl.textContent = 'The oracle is silent';
     if (statusEl) statusEl.textContent = 'Error: ' + err.message;
-    btn.disabled = false; btn.textContent = 'Draw a lot'; kwIsDrawing = false;
+    btn.disabled = false; btn.textContent = 'Draw Lots'; kwIsDrawing = false;
   }
 }
 
@@ -1433,6 +1461,22 @@ if (document.readyState === 'loading') {
   }, function() {});
 }
 </script>
+
+<!-- Quantum unreachable modal overlay -->
+<div id="kw-unreachable-popup" style="display:none; position:fixed; inset:0; z-index:99998; background:rgba(0,0,30,0.82); align-items:center; justify-content:center; padding:24px;">
+  <div style="background:#0a0030; border:1px solid rgba(255,100,100,0.45); border-radius:18px; padding:28px 22px; width:100%; max-width:380px; text-align:center; box-shadow:0 0 40px rgba(255,80,80,0.25);">
+    <div style="font-size:32px; margin-bottom:12px;">⚠️</div>
+    <div style="font-family:'Cinzel',serif; font-size:14px; color:#ff8a80; letter-spacing:0.08em; margin-bottom:10px;">Quantum source unreachable</div>
+    <div style="font-family:'Crimson Pro',serif; font-size:14px; font-style:italic; color:rgba(255,255,255,0.6); margin-bottom:22px; line-height:1.6;">The quantum vacuum API is not responding at this moment. You may try again or switch to another source.</div>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <button onclick="kwRetryQuantum()" style="width:100%; padding:14px; background:rgba(0,191,255,0.15); border:1px solid rgba(0,191,255,0.4); color:#00BFFF; font-family:'Cinzel',serif; font-size:13px; letter-spacing:0.1em; border-radius:10px; cursor:pointer;">↺ Try Again</button>
+      <div style="display:flex; gap:10px;">
+        <button onclick="kwSwitchTo('random-org')" style="flex:1; padding:13px 8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.85); font-family:'Cinzel',serif; font-size:12px; letter-spacing:0.08em; border-radius:10px; cursor:pointer;">📡 Use Atm.</button>
+        <button onclick="kwSwitchTo('crypto')" style="flex:1; padding:13px 8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.85); font-family:'Cinzel',serif; font-size:12px; letter-spacing:0.08em; border-radius:10px; cursor:pointer;">🔐 Use Crypto</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Lot number flash overlay -->
 <div id="kw-flash-overlay">
