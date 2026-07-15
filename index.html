@@ -651,11 +651,10 @@ button:active, a.card:active, [onclick]:active {
 // ================================================================
 
 // ── Screen navigation ──
-function goTo(screenId) {
-  // Capture name of the currently active screen before switching
-  const prevScreen = document.querySelector('.screen.active');
-  const prevName = prevScreen ? (prevScreen.dataset.screenName || '') : '';
-
+// renderScreen: pure DOM switch, does NOT touch browser history.
+// Used both by goTo() (user-initiated nav) and by the popstate handler
+// (system/back-gesture-initiated nav), so screens never get pushed twice.
+function renderScreen(screenId) {
   document.querySelectorAll('.screen').forEach(s => {
     s.classList.remove('active');
     s.style.display = 'none';
@@ -683,39 +682,26 @@ function goTo(screenId) {
   if (screenId === 'screen-gyo-history') renderHistorySlots();
 }
 
-// ── Swipe handling for Lots Directory (prevents native edge-swipe from exiting app) ──
-(function() {
-  const dirScreen = document.getElementById('screen-gyo-directory');
-  if (!dirScreen) return;
-  let touchStartX = 0, touchStartY = 0, tracking = false;
+// goTo: called by every onclick in the app. Switches the screen AND pushes
+// a history entry, so that Android's system back-gesture / browser back
+// button has an in-app state to consume instead of exiting the app.
+function goTo(screenId, _fromPopState) {
+  renderScreen(screenId);
+  if (!_fromPopState) {
+    try { history.pushState({ spgoScreen: screenId }, '', location.pathname + location.hash); }
+    catch(e) {}
+  }
+}
 
-  dirScreen.addEventListener('touchstart', function(e) {
-    if (!e.touches || e.touches.length !== 1) return;
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    tracking = true;
-    // Block the OS/browser edge-swipe-back gesture when starting near the screen edge
-    if (touchStartX < 40) e.preventDefault();
-  }, { passive: false });
+// Handle back-gesture / back-button: move within the app instead of leaving it.
+window.addEventListener('popstate', function(e) {
+  const screenId = (e.state && e.state.spgoScreen) || 'screen-gyo-menu';
+  goTo(screenId, true);
+});
 
-  dirScreen.addEventListener('touchmove', function(e) {
-    if (!tracking || !e.touches || e.touches.length !== 1) return;
-    const dx = e.touches[0].clientX - touchStartX;
-    const dy = e.touches[0].clientY - touchStartY;
-    if (Math.abs(dx) > Math.abs(dy) && touchStartX < 40) e.preventDefault();
-  }, { passive: false });
-
-  dirScreen.addEventListener('touchend', function(e) {
-    if (!tracking) return;
-    tracking = false;
-    if (!e.changedTouches || e.changedTouches.length !== 1) return;
-    const dx = e.changedTouches[0].clientX - touchStartX;
-    const dy = e.changedTouches[0].clientY - touchStartY;
-    if (dx < -60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-      goTo('screen-gyo-menu');
-    }
-  }, { passive: true });
-})();
+// Ensure the very first screen has a history entry to land back on,
+// so the first back-gesture doesn't immediately exit past the app root.
+try { history.replaceState({ spgoScreen: 'screen-gyo-menu' }, '', location.pathname + location.hash); } catch(e) {}
 
 // ── JSONP helper ──
 function gasJsonp(params, onSuccess, onError, timeoutMs) {
