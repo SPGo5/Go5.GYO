@@ -203,7 +203,7 @@ button:active, a.card:active, [onclick]:active {
   transition: background 0.2s, border-color 0.2s;
 }
 .hist-slot-actions button:active { opacity: 0.7; transform: scale(0.97); }
-.hist-slot-actions .btn-regen { border-color: rgba(0,191,255,0.4); color: #00BFFF; }
+.hist-slot-actions .btn-regen { border-color: rgba(204,255,0,0.55); color: #CCFF00; }
 .hist-slot-actions .btn-copy-img { border-color: rgba(255,255,255,0.3); }
 .hist-slot-actions .btn-del { border-color: rgba(255,80,80,0.35); color: rgba(255,130,130,0.8); }
 .hist-replace-warn {
@@ -215,7 +215,7 @@ button:active, a.card:active, [onclick]:active {
 }
 
 /* ── Lots Directory screen ── */
-#screen-gyo-directory { padding: 0; }
+#screen-gyo-directory { padding: 0; touch-action: pan-y; overscroll-behavior-x: none; }
 #gyo-dir-iframe {
   width: 100%;
   border: none;
@@ -484,7 +484,7 @@ button:active, a.card:active, [onclick]:active {
       <div class="card-icon" style="font-size:32px;">🗂️</div>
       <div class="card-text">
         <div class="card-title">Previously Drawn Lots</div>
-        <div class="card-desc">Your last 5 draws · Local only</div>
+        <div class="card-desc">Your last 20 draws · Local only</div>
       </div>
       <div class="card-arrow">›</div>
     </div>
@@ -519,7 +519,7 @@ button:active, a.card:active, [onclick]:active {
     <span class="inner-title">Previously Drawn Lots</span>
   </div>
 
-  <p class="hist-privacy-note">Your last 5 draws are saved locally ONLY on this device. If you clear browser cache, they will be gone.</p>
+  <p class="hist-privacy-note">Your last 20 draws are saved locally ONLY on this device. If you clear browser cache, they will be gone.</p>
 
   <div id="hist-slots-container" style="width:100%; max-width:420px;">
     <!-- slots rendered by JS -->
@@ -683,6 +683,40 @@ function goTo(screenId) {
   if (screenId === 'screen-gyo-history') renderHistorySlots();
 }
 
+// ── Swipe handling for Lots Directory (prevents native edge-swipe from exiting app) ──
+(function() {
+  const dirScreen = document.getElementById('screen-gyo-directory');
+  if (!dirScreen) return;
+  let touchStartX = 0, touchStartY = 0, tracking = false;
+
+  dirScreen.addEventListener('touchstart', function(e) {
+    if (!e.touches || e.touches.length !== 1) return;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    tracking = true;
+    // Block the OS/browser edge-swipe-back gesture when starting near the screen edge
+    if (touchStartX < 40) e.preventDefault();
+  }, { passive: false });
+
+  dirScreen.addEventListener('touchmove', function(e) {
+    if (!tracking || !e.touches || e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - touchStartX;
+    const dy = e.touches[0].clientY - touchStartY;
+    if (Math.abs(dx) > Math.abs(dy) && touchStartX < 40) e.preventDefault();
+  }, { passive: false });
+
+  dirScreen.addEventListener('touchend', function(e) {
+    if (!tracking) return;
+    tracking = false;
+    if (!e.changedTouches || e.changedTouches.length !== 1) return;
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    if (dx < -60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      goTo('screen-gyo-menu');
+    }
+  }, { passive: true });
+})();
+
 // ── JSONP helper ──
 function gasJsonp(params, onSuccess, onError, timeoutMs) {
   const cbName = 'gasCB_' + Date.now() + '_' + Math.floor(Math.random()*9999);
@@ -845,7 +879,7 @@ function gyoEnter() { goTo('screen-gyo-menu'); }
 // LOCAL HISTORY — max 5 draws, FIFO, localStorage
 // ================================================================
 const HIST_KEY = 'gyo_draw_history';
-const HIST_MAX = 5;
+const HIST_MAX = 20;
 
 function histLoad() {
   try {
