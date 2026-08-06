@@ -577,7 +577,11 @@ button:active, a.card:active, [onclick]:active {
 
     <div style="width:100%; max-width:420px; margin-bottom:16px;">
       <label style="font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.35); display:block; margin-bottom:8px;">Type your question here:</label>
-      <textarea id="kw-question" rows="3" placeholder="What would you like to ask Her Holy's Wisdom?" style="width:100%; border-radius:10px; border:1px solid rgba(0,191,255,0.3); background:rgba(0,0,0,0.35); color:white; font-size:16px; font-family:'Crimson Pro',serif; padding:12px 14px; outline:none; resize:none; line-height:1.5; min-height:60px; overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+      <textarea id="kw-question" rows="3" placeholder="What would you like to ask Her Holy's Wisdom?" style="width:100%; border-radius:10px; border:1px solid rgba(0,191,255,0.3); background:rgba(0,0,0,0.35); color:white; font-size:16px; font-family:'Crimson Pro',serif; padding:12px 14px; outline:none; resize:none; line-height:1.5; min-height:60px; overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'; kwSaveTypedQuestion(this.value);"></textarea>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <button type="button" onclick="kwFillPreviousQuestion()" style="flex:1; padding:8px 6px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.18); color:rgba(255,255,255,0.7); font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.06em; border-radius:8px; cursor:pointer;">↺ Previous Question</button>
+        <button type="button" onclick="kwClearQuestion()" style="flex:1; padding:8px 6px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.18); color:rgba(255,255,255,0.7); font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.06em; border-radius:8px; cursor:pointer;">✕ Clear Question</button>
+      </div>
     </div>
 
     <div class="kw-stage">
@@ -1012,6 +1016,46 @@ function kwRetryQuantum() {
   kwDraw();
 }
 
+function kwCloseUnreachablePopup() {
+  // Just dismiss the popup — main view + typed question are untouched,
+  // Draw Lots button is already re-enabled from kwDraw()'s catch block.
+  const popup = document.getElementById('kw-unreachable-popup');
+  if (popup) popup.style.display = 'none';
+}
+
+// ── Recovery snapshot of whatever was last typed in the question box ──
+// This is deliberately separate from draw history: it exists to recover
+// an UNDRAWN question (e.g. the box got wiped by a reset/reload before
+// "Draw Lots" ever succeeded), not to let people redraw an old lot.
+const LAST_TYPED_Q_KEY = 'gyo_last_typed_question';
+
+function kwSaveTypedQuestion(val) {
+  // Only snapshot non-empty text, so clearing the box on purpose (or a
+  // reset between draws) never overwrites the recovery copy.
+  if (!val || !val.trim()) return;
+  try { localStorage.setItem(LAST_TYPED_Q_KEY, val); } catch (e) {}
+}
+
+function kwFillPreviousQuestion() {
+  const qEl = document.getElementById('kw-question');
+  if (!qEl) return;
+  let prev = '';
+  try { prev = localStorage.getItem(LAST_TYPED_Q_KEY) || ''; } catch (e) {}
+  if (!prev) { qEl.placeholder = 'No previous question found.'; return; }
+  qEl.value = prev;
+  qEl.style.height = 'auto';
+  qEl.style.height = qEl.scrollHeight + 'px';
+}
+
+function kwClearQuestion() {
+  const qEl = document.getElementById('kw-question');
+  if (!qEl) return;
+  qEl.value = '';
+  qEl.style.height = 'auto';
+  // Note: does NOT touch the recovery snapshot above — clearing the box
+  // is intentional, not an accident to recover from.
+}
+
 function kwSwitchTo(method) {
   const popup = document.getElementById('kw-unreachable-popup');
   if (popup) popup.style.display = 'none';
@@ -1102,6 +1146,7 @@ async function kwDraw() {
     });
     if (numEl) numEl.textContent = number;
     kwLastNumber = number; kwLastSource = sourceUsed;
+    try { localStorage.removeItem(LAST_TYPED_Q_KEY); } catch (e) {} // draw succeeded — recovery snapshot no longer needed
     const now = new Date();
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     kwResultDateTime = months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear()
@@ -1428,7 +1473,8 @@ if (document.readyState === 'loading') {
 
 <!-- Quantum unreachable modal overlay -->
 <div id="kw-unreachable-popup" style="display:none; position:fixed; inset:0; z-index:99998; background:rgba(0,0,30,0.82); align-items:center; justify-content:center; padding:24px;">
-  <div style="background:#0a0030; border:1px solid rgba(255,100,100,0.45); border-radius:18px; padding:28px 22px; width:100%; max-width:380px; text-align:center; box-shadow:0 0 40px rgba(255,80,80,0.25);">
+  <div style="position:relative; background:#0a0030; border:1px solid rgba(255,100,100,0.45); border-radius:18px; padding:28px 22px; width:100%; max-width:380px; text-align:center; box-shadow:0 0 40px rgba(255,80,80,0.25);">
+    <button onclick="kwCloseUnreachablePopup()" aria-label="Close" style="position:absolute; top:10px; right:10px; width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.7); font-size:15px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
     <div style="font-size:32px; margin-bottom:12px;">⚠️</div>
     <div style="font-family:'Cinzel',serif; font-size:14px; color:#ff8a80; letter-spacing:0.08em; margin-bottom:10px;">Quantum source unreachable</div>
     <div style="font-family:'Crimson Pro',serif; font-size:14px; font-style:italic; color:rgba(255,255,255,0.6); margin-bottom:22px; line-height:1.6;">The quantum vacuum API is not responding at this moment. You may try again or switch to another source.</div>
