@@ -362,12 +362,12 @@ button:active, a.card:active, [onclick]:active {
   line-height: 1;
   color: #ccff00;
   --glow-rgb: 204,255,0;
-  text-shadow: 0 0 20px rgba(var(--glow-rgb),0.95), 0 0 60px rgba(var(--glow-rgb),0.6), 0 0 120px rgba(var(--glow-rgb),0.3);
+  text-shadow: 0 0 25px rgba(var(--glow-rgb),1), 0 0 80px rgba(var(--glow-rgb),0.75), 0 0 150px rgba(var(--glow-rgb),0.45);
   animation: kwFlashPulse 0.6s ease-in-out infinite alternate;
 }
 @keyframes kwFlashPulse {
-  0% { text-shadow: 0 0 20px rgba(var(--glow-rgb),0.95), 0 0 60px rgba(var(--glow-rgb),0.6); }
-  100% { text-shadow: 0 0 40px rgba(var(--glow-rgb),1), 0 0 100px rgba(var(--glow-rgb),0.9), 0 0 160px rgba(var(--glow-rgb),0.5); }
+  0% { text-shadow: 0 0 25px rgba(var(--glow-rgb),1), 0 0 80px rgba(var(--glow-rgb),0.75), 0 0 150px rgba(var(--glow-rgb),0.45); }
+  100% { text-shadow: 0 0 50px rgba(var(--glow-rgb),1), 0 0 130px rgba(var(--glow-rgb),0.95), 0 0 220px rgba(var(--glow-rgb),0.6); }
 }
 #kw-flash-label {
   font-family: 'Cinzel', serif;
@@ -926,7 +926,7 @@ function renderHistorySlots() {
         : '';
       const qPreview = getQuestionPreview(entry.question);
       const glowRgb = kwHexToRgb(kwLotGlowColor(entry.lot));
-      const lotGlowStyle = `text-shadow:0 0 8px rgba(${glowRgb},0.9), 0 0 20px rgba(${glowRgb},0.5);`;
+      const lotGlowStyle = `text-shadow:0 0 10px rgba(${glowRgb},1), 0 0 30px rgba(${glowRgb},0.7), 0 0 55px rgba(${glowRgb},0.4);`;
       html += `${warn}<div class="hist-slot" id="hist-slot-${i}">
         <div class="hist-slot-num">Draw ${i+1} · ${entry.datetime || ''}</div>
         <div>
@@ -1037,7 +1037,7 @@ function kwApplyLotGlow(el, lotNum) {
   const glow = kwLotGlowColor(lotNum);
   const rgb = kwHexToRgb(glow);
   el.style.setProperty('--glow-rgb', rgb);
-  el.style.textShadow = `0 0 8px rgba(${rgb},0.95), 0 0 30px rgba(${rgb},0.6), 0 0 60px rgba(${rgb},0.3)`;
+  el.style.textShadow = `0 0 12px rgba(${rgb},1), 0 0 45px rgba(${rgb},0.8), 0 0 90px rgba(${rgb},0.5)`;
 }
 
 function kwHexToRgb(hex) {
@@ -1459,11 +1459,17 @@ function kwCopyResultImage(onDoneCallback) {
     ctx.fillText('Lot', bx + boxPad, lotLineY);
 
     // Lot number
-    ctx.fillStyle = '#ccff00';
     ctx.font = '700 ' + px(72) + 'px "Cormorant Garamond", serif';
-    ctx.save();
     const glowRgbCanvas = kwHexToRgb(kwLotGlowColor(lotNum));
-    ctx.shadowColor = `rgba(${glowRgbCanvas},0.9)`; ctx.shadowBlur = px(8);
+    // Wide soft pass for reach, then a tighter bright pass for intensity, then a crisp fill on top.
+    ctx.save();
+    ctx.fillStyle = `rgba(${glowRgbCanvas},0.55)`;
+    ctx.shadowColor = `rgba(${glowRgbCanvas},0.9)`; ctx.shadowBlur = px(28);
+    ctx.fillText(String(lotNum), bx + boxPad + px(80), lotLineY);
+    ctx.restore();
+    ctx.save();
+    ctx.fillStyle = '#ccff00';
+    ctx.shadowColor = `rgba(${glowRgbCanvas},1)`; ctx.shadowBlur = px(12);
     ctx.fillText(String(lotNum), bx + boxPad + px(80), lotLineY);
     ctx.restore();
 
