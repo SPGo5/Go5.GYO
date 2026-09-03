@@ -361,13 +361,12 @@ button:active, a.card:active, [onclick]:active {
   font-size: clamp(120px, 40vw, 240px);
   line-height: 1;
   color: #ccff00;
-  --glow-rgb: 204,255,0;
-  text-shadow: 0 0 25px rgba(var(--glow-rgb),1), 0 0 80px rgba(var(--glow-rgb),0.75), 0 0 150px rgba(var(--glow-rgb),0.45);
+  text-shadow: 0 0 20px rgba(204,255,0,0.95), 0 0 60px rgba(204,255,0,0.6), 0 0 120px rgba(204,255,0,0.3);
   animation: kwFlashPulse 0.6s ease-in-out infinite alternate;
 }
 @keyframes kwFlashPulse {
-  0% { text-shadow: 0 0 25px rgba(var(--glow-rgb),1), 0 0 80px rgba(var(--glow-rgb),0.75), 0 0 150px rgba(var(--glow-rgb),0.45); }
-  100% { text-shadow: 0 0 50px rgba(var(--glow-rgb),1), 0 0 130px rgba(var(--glow-rgb),0.95), 0 0 220px rgba(var(--glow-rgb),0.6); }
+  0% { text-shadow: 0 0 20px rgba(204,255,0,0.95), 0 0 60px rgba(204,255,0,0.6); }
+  100% { text-shadow: 0 0 40px rgba(204,255,0,1), 0 0 100px rgba(204,255,0,0.9), 0 0 160px rgba(204,255,0,0.5); }
 }
 #kw-flash-label {
   font-family: 'Cinzel', serif;
@@ -578,11 +577,7 @@ button:active, a.card:active, [onclick]:active {
 
     <div style="width:100%; max-width:420px; margin-bottom:16px;">
       <label style="font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.35); display:block; margin-bottom:8px;">Type your question here:</label>
-      <textarea id="kw-question" rows="3" placeholder="What would you like to ask Her Holy's Wisdom?" style="width:100%; border-radius:10px; border:1px solid rgba(0,191,255,0.3); background:rgba(0,0,0,0.35); color:white; font-size:16px; font-family:'Crimson Pro',serif; padding:12px 14px; outline:none; resize:none; line-height:1.5; min-height:60px; overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'; kwSaveTypedQuestion(this.value);"></textarea>
-      <div style="display:flex; gap:8px; margin-top:8px;">
-        <button type="button" onclick="kwFillPreviousQuestion()" style="flex:1; padding:8px 6px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.18); color:rgba(255,255,255,0.7); font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.06em; border-radius:8px; cursor:pointer;">↺ Previous Question</button>
-        <button type="button" onclick="kwClearQuestion()" style="flex:1; padding:8px 6px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.18); color:rgba(255,255,255,0.7); font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.06em; border-radius:8px; cursor:pointer;">✕ Clear Question</button>
-      </div>
+      <textarea id="kw-question" rows="3" placeholder="What would you like to ask Her Holy's Wisdom?" style="width:100%; border-radius:10px; border:1px solid rgba(0,191,255,0.3); background:rgba(0,0,0,0.35); color:white; font-size:16px; font-family:'Crimson Pro',serif; padding:12px 14px; outline:none; resize:none; line-height:1.5; min-height:60px; overflow:hidden;" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
     </div>
 
     <div class="kw-stage">
@@ -752,6 +747,7 @@ async function validateWithToken(token) {
     const resp = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
       headers: { Authorization: 'Bearer ' + token }
     });
+    if (!resp.ok) { showLoginError('Google userinfo failed: ' + resp.status); return; }
     const info = await resp.json();
     const email = info.email;
     if (!email) { showLoginError('Could not get your email. Please try again.'); return; }
@@ -778,11 +774,11 @@ async function validateWithToken(token) {
       } else {
         showLoginError('Your account (' + email + ') is not registered.');
       }
-    }, function() {
-      showLoginError('Connection error. Please try again.');
+    }, function(err) {
+      showLoginError('Backend (Apps Script) connection failed: ' + err);
     });
   } catch(e) {
-    showLoginError('Connection error. Please try again.');
+    showLoginError('Google userinfo request threw: ' + e.message);
   }
 }
 
@@ -925,12 +921,10 @@ function renderHistorySlots() {
         ? `<div class="hist-replace-warn">Next draw will replace this card. 'Copy 📷' to save it permanently in PNG images.</div>`
         : '';
       const qPreview = getQuestionPreview(entry.question);
-      const glowRgb = kwHexToRgb(kwLotGlowColor(entry.lot));
-      const lotGlowStyle = `text-shadow:0 0 10px rgba(${glowRgb},1), 0 0 30px rgba(${glowRgb},0.7), 0 0 55px rgba(${glowRgb},0.4);`;
       html += `${warn}<div class="hist-slot" id="hist-slot-${i}">
         <div class="hist-slot-num">Draw ${i+1} · ${entry.datetime || ''}</div>
         <div>
-          <span class="hist-slot-lot" style="${lotGlowStyle}">${entry.lot}</span>
+          <span class="hist-slot-lot">${entry.lot}</span>
           <span class="hist-slot-date">${entry.source || ''}</span>
         </div>
         <div class="hist-slot-q">${escHtml(qPreview)}</div>
@@ -973,7 +967,7 @@ function kwShowResultNoSave() {
   const rawQ = (document.getElementById('kw-question') || {}).value || '';
   const smartQ = kwSmartCapitalise(rawQ);
   const qEl = document.getElementById('kw-result-question'); if (qEl) qEl.textContent = smartQ || '(No question entered)';
-  const lotEl = document.getElementById('kw-result-lot-num'); if (lotEl) { lotEl.textContent = kwLastNumber; kwApplyLotGlow(lotEl, kwLastNumber); }
+  const lotEl = document.getElementById('kw-result-lot-num'); if (lotEl) lotEl.textContent = kwLastNumber;
   const dtEl = document.getElementById('kw-result-datetime'); if (dtEl) dtEl.textContent = kwResultDateTime;
   const LOT_BASE = 'https://sites.google.com/view/divinationitsutsuji/%E8%A7%80%E9%9F%B3%E9%9D%88%E7%B0%BD-guan-yin-fortune-divination-quan-%C3%A2m-linh-thi%C3%AAm/lots/';
   const linkEl = document.getElementById('kw-lot-link'); if (linkEl) linkEl.href = LOT_BASE + kwLastNumber;
@@ -1013,115 +1007,10 @@ kwResultDateTime = '';
 kwSelectedMethod = 'quantum';
 kwIsDrawing = false;
 
-// ── Lot tiers (upper/middle/lower) — used only to tint the glow around the
-// lot number. The lime (#ccff00) fill color itself never changes; only the
-// text-shadow glow color hints at the lot's tier. ──
-const KW_LOT_UPPER  = new Set([1,4,8,11,12,18,21,42,43,45,47,51,67,73,78,80,81,86,89,90,92,96]);
-const KW_LOT_MIDDLE = new Set([5,6,9,10,13,14,15,16,17,19,20,22,23,25,26,27,28,29,30,31,32,33,34,35,36,37,40,41,44,46,48,49,50,52,53,55,56,57,58,59,61,62,63,68,69,71,72,75,76,77,79,82,83,85,87,88,91,93,95,97]);
-const KW_LOT_LOWER  = new Set([2,3,7,24,38,39,54,60,64,65,66,70,74,84,94,98,99,100]);
-
-function kwLotGlowColor(lotNum) {
-  const n = parseInt(lotNum, 10);
-  if (KW_LOT_UPPER.has(n)) return '#E0B0FF';   // upper — favorable
-  if (KW_LOT_LOWER.has(n)) return '#FF3131';   // lower — unfavorable
-  if (KW_LOT_MIDDLE.has(n)) return '#00BFFF';  // middle — neutral
-  return '#ccff00'; // fallback: unknown/unclassified number, glow matches the base lime
-}
-
-// Applies the tier-tinted glow to a lot-number element, keeping its fill
-// color at the signature lime. Sets both a plain text-shadow (for static
-// elements) and a --glow-rgb CSS variable (for elements like the flash
-// overlay whose glow animation is driven by that variable in CSS).
-function kwApplyLotGlow(el, lotNum) {
-  if (!el) return;
-  const glow = kwLotGlowColor(lotNum);
-  const rgb = kwHexToRgb(glow);
-  el.style.setProperty('--glow-rgb', rgb);
-  el.style.textShadow = `0 0 12px rgba(${rgb},1), 0 0 45px rgba(${rgb},0.8), 0 0 90px rgba(${rgb},0.5)`;
-}
-
-function kwHexToRgb(hex) {
-  const h = hex.replace('#', '');
-  const r = parseInt(h.substring(0,2), 16), g = parseInt(h.substring(2,4), 16), b = parseInt(h.substring(4,6), 16);
-  return r + ',' + g + ',' + b;
-}
-
-// Labels/metadata for the three sources, used to build the unreachable popup dynamically.
-const KW_METHOD_META = {
-  quantum:      { label: 'Quantum',  icon: '⚛️', name: 'Quantum source', desc: 'The quantum vacuum API is not responding at this moment.' },
-  'random-org': { label: 'Atm.',     icon: '📡', name: 'Atmospheric noise source', desc: 'The random.org atmospheric-noise API is not responding at this moment.' },
-  crypto:       { label: 'Crypto',   icon: '🔐', name: 'Hardware entropy source', desc: 'This should not be able to fail — it runs locally on your device.' }
-};
-
-// Currently-failed method the popup is offering to retry/replace.
-let kwFailedMethod = null;
-
-function showUnreachablePopup(failedMethod) {
-  kwFailedMethod = failedMethod;
-  const meta = KW_METHOD_META[failedMethod] || {};
-  const titleEl = document.getElementById('kw-unreachable-title');
-  const descEl = document.getElementById('kw-unreachable-desc');
-  if (titleEl) titleEl.textContent = (meta.name || 'Source') + ' unreachable';
-  if (descEl) descEl.textContent = (meta.desc || '') + ' You may try again or switch to another source.';
-
-  // Build "Use X" buttons for the two methods OTHER than the one that just failed.
-  const otherMethods = Object.keys(KW_METHOD_META).filter(m => m !== failedMethod);
-  const switchRow = document.getElementById('kw-unreachable-switch-row');
-  if (switchRow) {
-    switchRow.innerHTML = otherMethods.map(m => {
-      const mm = KW_METHOD_META[m];
-      return `<button onclick="kwSwitchTo('${m}')" style="flex:1; padding:13px 8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.85); font-family:'Cinzel',serif; font-size:12px; letter-spacing:0.08em; border-radius:10px; cursor:pointer;">${mm.icon} Use ${mm.label}</button>`;
-    }).join('');
-  }
-
-  const popup = document.getElementById('kw-unreachable-popup');
-  if (popup) popup.style.display = 'flex';
-}
-
-function kwRetryFailedMethod() {
+function kwRetryQuantum() {
   const popup = document.getElementById('kw-unreachable-popup');
   if (popup) popup.style.display = 'none';
   kwDraw();
-}
-
-function kwCloseUnreachablePopup() {
-  // Just dismiss the popup — main view + typed question are untouched,
-  // Draw Lots button is already re-enabled from kwDraw()'s catch block.
-  const popup = document.getElementById('kw-unreachable-popup');
-  if (popup) popup.style.display = 'none';
-}
-
-// ── Recovery snapshot of whatever was last typed in the question box ──
-// This is deliberately separate from draw history: it exists to recover
-// an UNDRAWN question (e.g. the box got wiped by a reset/reload before
-// "Draw Lots" ever succeeded), not to let people redraw an old lot.
-const LAST_TYPED_Q_KEY = 'gyo_last_typed_question';
-
-function kwSaveTypedQuestion(val) {
-  // Only snapshot non-empty text, so clearing the box on purpose (or a
-  // reset between draws) never overwrites the recovery copy.
-  if (!val || !val.trim()) return;
-  try { localStorage.setItem(LAST_TYPED_Q_KEY, val); } catch (e) {}
-}
-
-function kwFillPreviousQuestion() {
-  const qEl = document.getElementById('kw-question');
-  if (!qEl) return;
-  let prev = '';
-  try { prev = localStorage.getItem(LAST_TYPED_Q_KEY) || ''; } catch (e) {}
-  if (!prev) { qEl.placeholder = 'No previous question found.'; return; }
-  qEl.value = prev;
-  qEl.style.height = 'auto';
-  qEl.style.height = qEl.scrollHeight + 'px';
-}
-
-function kwClearQuestion() {
-  const qEl = document.getElementById('kw-question');
-  if (!qEl) return;
-  qEl.value = '';
-  qEl.style.height = 'auto';
-  // Note: does NOT touch the recovery snapshot above — clearing the box
-  // is intentional, not an accident to recover from.
 }
 
 function kwSwitchTo(method) {
@@ -1185,25 +1074,20 @@ async function kwDraw() {
   let number, sourceUsed = kwSelectedMethod;
   try {
     if (kwSelectedMethod === 'crypto') {
-      // Local, synchronous, no network call involved — nothing to fail here.
       await new Promise(r => setTimeout(r, 200));
       number = cryptoRandN(100);
     } else if (kwSelectedMethod === 'random-org') {
       if (statusEl) statusEl.textContent = 'Contacting random.org…';
       try { number = await randomOrgFetchN(100); }
-      catch {
-        if (statusEl) statusEl.textContent = '';
-        btn.disabled = false; btn.textContent = 'Draw Lots'; kwIsDrawing = false;
-        showUnreachablePopup('random-org');
-        return;
-      }
+      catch { if (statusEl) statusEl.textContent = 'Atm. unreachable — using crypto'; number = cryptoRandN(100); sourceUsed = 'crypto'; }
     } else {
       if (statusEl) statusEl.textContent = 'Querying quantum vacuum…';
       try { number = await quantumFetchN(100); }
       catch {
         if (statusEl) statusEl.textContent = '';
         btn.disabled = false; btn.textContent = 'Draw Lots'; kwIsDrawing = false;
-        showUnreachablePopup('quantum');
+        const popup2 = document.getElementById('kw-unreachable-popup');
+        if (popup2) popup2.style.display = 'flex';
         return;
       }
     }
@@ -1219,7 +1103,6 @@ async function kwDraw() {
     });
     if (numEl) numEl.textContent = number;
     kwLastNumber = number; kwLastSource = sourceUsed;
-    try { localStorage.removeItem(LAST_TYPED_Q_KEY); } catch (e) {} // draw succeeded — recovery snapshot no longer needed
     const now = new Date();
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     kwResultDateTime = months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear()
@@ -1232,7 +1115,6 @@ async function kwDraw() {
     const flashLabel = document.getElementById('kw-flash-label');
     if (overlay && flashNum) {
       flashNum.textContent = number;
-      kwApplyLotGlow(flashNum, number);
       if (flashLabel) flashLabel.textContent = fateLabels[sourceUsed] || 'The oracle has spoken';
       overlay.style.display = 'flex';
       setTimeout(() => {
@@ -1265,7 +1147,7 @@ function kwShowResult() {
   const rawQ = (document.getElementById('kw-question') || {}).value || '';
   const smartQ = kwSmartCapitalise(rawQ);
   const qEl = document.getElementById('kw-result-question'); if (qEl) qEl.textContent = smartQ || '(No question entered)';
-  const lotEl = document.getElementById('kw-result-lot-num'); if (lotEl) { lotEl.textContent = kwLastNumber; kwApplyLotGlow(lotEl, kwLastNumber); }
+  const lotEl = document.getElementById('kw-result-lot-num'); if (lotEl) lotEl.textContent = kwLastNumber;
   const dtEl = document.getElementById('kw-result-datetime'); if (dtEl) dtEl.textContent = kwResultDateTime;
   const LOT_BASE = 'https://sites.google.com/view/divinationitsutsuji/%E8%A7%80%E9%9F%B3%E9%9D%88%E7%B0%BD-guan-yin-fortune-divination-quan-%C3%A2m-linh-thi%C3%AAm/lots/';
   const linkEl = document.getElementById('kw-lot-link'); if (linkEl) linkEl.href = LOT_BASE + kwLastNumber;
@@ -1459,17 +1341,9 @@ function kwCopyResultImage(onDoneCallback) {
     ctx.fillText('Lot', bx + boxPad, lotLineY);
 
     // Lot number
-    ctx.font = '700 ' + px(72) + 'px "Cormorant Garamond", serif';
-    const glowRgbCanvas = kwHexToRgb(kwLotGlowColor(lotNum));
-    // Wide soft pass for reach, then a tighter bright pass for intensity, then a crisp fill on top.
-    ctx.save();
-    ctx.fillStyle = `rgba(${glowRgbCanvas},0.55)`;
-    ctx.shadowColor = `rgba(${glowRgbCanvas},0.9)`; ctx.shadowBlur = px(28);
-    ctx.fillText(String(lotNum), bx + boxPad + px(80), lotLineY);
-    ctx.restore();
-    ctx.save();
     ctx.fillStyle = '#ccff00';
-    ctx.shadowColor = `rgba(${glowRgbCanvas},1)`; ctx.shadowBlur = px(12);
+    ctx.font = '700 ' + px(72) + 'px "Cormorant Garamond", serif';
+    ctx.save(); ctx.shadowColor = 'rgba(204,255,0,0.9)'; ctx.shadowBlur = px(8);
     ctx.fillText(String(lotNum), bx + boxPad + px(80), lotLineY);
     ctx.restore();
 
@@ -1555,15 +1429,15 @@ if (document.readyState === 'loading') {
 
 <!-- Quantum unreachable modal overlay -->
 <div id="kw-unreachable-popup" style="display:none; position:fixed; inset:0; z-index:99998; background:rgba(0,0,30,0.82); align-items:center; justify-content:center; padding:24px;">
-  <div style="position:relative; background:#0a0030; border:1px solid rgba(255,100,100,0.45); border-radius:18px; padding:28px 22px; width:100%; max-width:380px; text-align:center; box-shadow:0 0 40px rgba(255,80,80,0.25);">
-    <button onclick="kwCloseUnreachablePopup()" aria-label="Close" style="position:absolute; top:10px; right:10px; width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.7); font-size:15px; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+  <div style="background:#0a0030; border:1px solid rgba(255,100,100,0.45); border-radius:18px; padding:28px 22px; width:100%; max-width:380px; text-align:center; box-shadow:0 0 40px rgba(255,80,80,0.25);">
     <div style="font-size:32px; margin-bottom:12px;">⚠️</div>
-    <div id="kw-unreachable-title" style="font-family:'Cinzel',serif; font-size:14px; color:#ff8a80; letter-spacing:0.08em; margin-bottom:10px;">Source unreachable</div>
-    <div id="kw-unreachable-desc" style="font-family:'Crimson Pro',serif; font-size:14px; font-style:italic; color:rgba(255,255,255,0.6); margin-bottom:22px; line-height:1.6;"></div>
+    <div style="font-family:'Cinzel',serif; font-size:14px; color:#ff8a80; letter-spacing:0.08em; margin-bottom:10px;">Quantum source unreachable</div>
+    <div style="font-family:'Crimson Pro',serif; font-size:14px; font-style:italic; color:rgba(255,255,255,0.6); margin-bottom:22px; line-height:1.6;">The quantum vacuum API is not responding at this moment. You may try again or switch to another source.</div>
     <div style="display:flex; flex-direction:column; gap:10px;">
-      <button onclick="kwRetryFailedMethod()" style="width:100%; padding:14px; background:rgba(0,191,255,0.15); border:1px solid rgba(0,191,255,0.4); color:#00BFFF; font-family:'Cinzel',serif; font-size:13px; letter-spacing:0.1em; border-radius:10px; cursor:pointer;">↺ Try Again</button>
-      <div id="kw-unreachable-switch-row" style="display:flex; gap:10px;">
-        <!-- "Use X" buttons for the two non-failed sources are injected here by showUnreachablePopup() -->
+      <button onclick="kwRetryQuantum()" style="width:100%; padding:14px; background:rgba(0,191,255,0.15); border:1px solid rgba(0,191,255,0.4); color:#00BFFF; font-family:'Cinzel',serif; font-size:13px; letter-spacing:0.1em; border-radius:10px; cursor:pointer;">↺ Try Again</button>
+      <div style="display:flex; gap:10px;">
+        <button onclick="kwSwitchTo('random-org')" style="flex:1; padding:13px 8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.85); font-family:'Cinzel',serif; font-size:12px; letter-spacing:0.08em; border-radius:10px; cursor:pointer;">📡 Use Atm.</button>
+        <button onclick="kwSwitchTo('crypto')" style="flex:1; padding:13px 8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.85); font-family:'Cinzel',serif; font-size:12px; letter-spacing:0.08em; border-radius:10px; cursor:pointer;">🔐 Use Crypto</button>
       </div>
     </div>
   </div>
