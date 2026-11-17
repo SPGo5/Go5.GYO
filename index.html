@@ -417,40 +417,19 @@ button:active, a.card:active, [onclick]:active {
   text-transform: uppercase;
 }
 
-/* ── Last Updated stamp (shown on every screen) ── */
-#gyo-version {
-  position: fixed;
-  left: 0; right: 0; bottom: 4px;
-  text-align: center;
+/* ── Last Updated stamp (one class, placed per screen) ── */
+.gyo-version {
   font-family: 'Cinzel', serif;
   font-size: 10px;
   letter-spacing: 0.08em;
-  color: rgba(255,255,255,0.5);
-  text-shadow: 0 0 4px rgba(0,0,40,0.9), 0 0 8px rgba(0,0,40,0.9);
+  color: rgba(255,255,255,0.45);
+  text-align: center;
   pointer-events: none;
-  z-index: 50;
 }
 </style>
 </head>
 <body>
 
-<!-- LAST UPDATED STAMP: fully automatic. Reads the server's Last-Modified time of THIS file; nothing to edit. -->
-<div id="gyo-version">Last Updated: …</div>
-<script>
-(function () {
-  var el = document.getElementById('gyo-version');
-  if (!el) return;
-  var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  var d = new Date(document.lastModified);
-  // If the server sends no Last-Modified header, browsers return "now" — don't show that as a real stamp.
-  if (isNaN(d.getTime()) || Math.abs(Date.now() - d.getTime()) < 5000) {
-    el.textContent = 'Last Updated: unavailable';
-    return;
-  }
-  var p = function (n) { return String(n).padStart(2, '0'); };
-  el.textContent = 'Last Updated: ' + m[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
-})();
-</script>
 
 <!-- Profile pic corner -->
 <div id="profile-corner" onclick="toggleLogoutPopup()">
@@ -507,12 +486,14 @@ button:active, a.card:active, [onclick]:active {
   </div>
   <div id="login-error-gyo" style="color:#ff8a80;font-size:13px;margin-top:16px;display:none;max-width:320px;text-align:center;"></div>
   <div style="font-family:'Crimson Pro',serif;font-size:11px;font-style:italic;color:rgba(255,255,255,0.3);margin-top:48px;">GYO · Divination (i) Tsutsuji · SPGo</div>
+  <div class="gyo-version" style="margin-top:10px;"></div>
 </div>
 
 <!-- VERIFYING SCREEN -->
 <div id="screen-gyo-verify" class="screen" style="justify-content:center;gap:20px;" data-screen-name="Verifying">
   <img src="https://i.postimg.cc/NFwtVVDY/Tsutsuji-portal-logo-KY-with-tsutsuji-cropped.png" class="sp-loading-img" style="width:80px;height:auto;object-fit:contain;">
   <div class="sp-loading">Loading…</div>
+  <div class="gyo-version"></div>
 </div>
 
 <!-- GYO SPLASH SCREEN -->
@@ -527,6 +508,7 @@ button:active, a.card:active, [onclick]:active {
       <div style="font-family:'Cinzel',serif; font-size:11px; letter-spacing:0.15em; color:rgba(255,255,255,0.35);">VISITS</div>
       <div id="gyo-visit-count" style="font-size:22px; color:rgba(255,255,255,0.6);">—</div>
     </div>
+    <div class="gyo-version" style="position:absolute; left:0; right:0; bottom:calc(12px + env(safe-area-inset-bottom));"></div>
   </div>
 </div>
 
@@ -579,6 +561,7 @@ button:active, a.card:active, [onclick]:active {
   <div class="portal-footer">
     <div class="footer-credit">Developed by <strong>Claude</strong> · Conceived &amp; directed by <strong>SPGo</strong></div>
     <div class="footer-copy">© 2026 · SPGo · All rights reserved</div>
+    <div class="gyo-version" style="margin-top:6px;"></div>
   </div>
 </div>
 
@@ -600,6 +583,7 @@ button:active, a.card:active, [onclick]:active {
   <div class="portal-footer">
     <div class="footer-credit">Developed by <strong>Claude</strong> · Conceived &amp; directed by <strong>SPGo</strong></div>
     <div class="footer-copy">© 2026 · SPGo · All rights reserved</div>
+    <div class="gyo-version" style="margin-top:6px;"></div>
   </div>
 </div>
 
@@ -610,6 +594,7 @@ button:active, a.card:active, [onclick]:active {
   <div style="width:100%; display:flex; align-items:center; gap:12px; padding:16px 16px 12px; border-bottom:1px solid rgba(255,255,255,0.08); background:rgba(0,0,60,0.95); position:sticky; top:0; z-index:10; box-sizing:border-box;">
     <button class="back-btn" onclick="goTo('screen-gyo-menu')" style="font-size:26px; background:none; border:none; color:#00BFFF; cursor:pointer; padding:0 6px 0 0; line-height:1; flex-shrink:0;">‹<span class="back-btn-label"></span></button>
     <span style="font-family:'Cinzel',serif; font-size:13px; letter-spacing:0.15em; color:rgba(255,255,255,0.7); text-transform:uppercase;">Lots Directory</span>
+    <span class="gyo-version" style="margin-left:auto; font-size:9px; text-align:right;"></span>
   </div>
   <iframe id="gyo-dir-iframe" src="https://spgo5.github.io/Go5.GYO.Directory/" title="Lots Directory" allowfullscreen></iframe>
 </div>
@@ -717,6 +702,7 @@ button:active, a.card:active, [onclick]:active {
   <div class="portal-footer">
     <div class="footer-credit">Developed by <strong>Claude</strong> · Conceived &amp; directed by <strong>SPGo</strong></div>
     <div class="footer-copy">© 2026 · SPGo · All rights reserved</div>
+    <div class="gyo-version" style="margin-top:6px;"></div>
   </div>
 </div>
 
@@ -1657,5 +1643,22 @@ if (document.readyState === 'loading') {
   <div id="kw-flash-number"></div>
   <div id="kw-flash-label">Quantum chance has decided</div>
 </div>
+<script>
+(function () {
+  var els = document.querySelectorAll('.gyo-version');
+  if (!els.length) return;
+  var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var d = new Date(document.lastModified);
+  var txt;
+  // If the server sends no Last-Modified header, browsers return "now" — don't show that as a real stamp.
+  if (isNaN(d.getTime()) || Math.abs(Date.now() - d.getTime()) < 5000) {
+    txt = 'Last Updated: unavailable';
+  } else {
+    var p = function (n) { return String(n).padStart(2, '0'); };
+    txt = 'Last Updated: ' + m[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  for (var i = 0; i < els.length; i++) els[i].textContent = txt;
+})();
+</script>
 </body>
 </html>
