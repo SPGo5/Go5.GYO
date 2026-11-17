@@ -1126,6 +1126,23 @@ kwResultDateTime = '';
 kwSelectedMethod = 'quantum';
 kwIsDrawing = false;
 
+// Show the popup with wording that matches WHY the quantum draw failed.
+function kwShowUnreachable(kind) {
+  const T = {
+    quota:   ['Quantum quota used up',            'The free quantum draws for this month have been used up, so the quantum source cannot be used until the quota resets. Please switch to another source.', false],
+    auth:    ['Quantum key not accepted',         'The quantum service did not accept the access key. This is a setup problem, not a network problem. Please switch to another source for now.', false],
+    server:  ['Quantum server problem',           'The quantum server answered but could not give a number right now. You may try again or switch to another source.', true],
+    timeout: ['Quantum server not responding',    'The quantum server took too long to answer. You may try again or switch to another source.', true],
+    network: ['Quantum source unreachable',       'The quantum server could not be reached (no connection, or the request was blocked). You may try again or switch to another source.', true]
+  };
+  const t = T[kind] || T.network;
+  const ti = document.getElementById('kw-unreach-title'); if (ti) ti.textContent = t[0];
+  const de = document.getElementById('kw-unreach-desc');  if (de) de.textContent = t[1];
+  const rb = document.getElementById('kw-unreach-retry'); if (rb) rb.style.display = t[2] ? 'block' : 'none';
+  const popup = document.getElementById('kw-unreachable-popup');
+  if (popup) popup.style.display = 'flex';
+}
+
 function kwRetryQuantum() {
   const popup = document.getElementById('kw-unreachable-popup');
   if (popup) popup.style.display = 'none';
@@ -1204,22 +1221,45 @@ function kwApplyLotGlow(el, n, k) {
 // NOTE: key is exposed client-side — temporary; move behind a proxy later.
 const ANU_QRNG_URL = 'https://api.quantumnumbers.anu.edu.au';
 const ANU_QRNG_KEY = 'RIZNpWj4Z28WM9QzBU0Gs6ZZrgjkQiJL3F0gvhds';
+// Failure kinds thrown by quantumFetchN (err.kind):
+//   'quota'   – monthly free quota used up (HTTP 429, or 402/403 whose body mentions a limit/quota)
+//   'auth'    – key rejected/missing (HTTP 401, or 403 that is not about quota)
+//   'server'  – ANU answered with 5xx or an unusable response
+//   'timeout' – no answer within 10 s
+//   'network' – request never completed (offline, DNS, or blocked by CORS — the browser can't tell these apart)
+function kwQErr(kind, msg) { const e = new Error(msg); e.kind = kind; return e; }
 async function quantumFetchN(max) {
   // One request uses 1 of the monthly quota; ask for 1 uint16 only.
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 10000);
+  let r;
   try {
-    const r = await fetch(ANU_QRNG_URL + '?length=1&type=uint16', {
+    r = await fetch(ANU_QRNG_URL + '?length=1&type=uint16', {
       headers: { 'x-api-key': ANU_QRNG_KEY },
       signal: ctrl.signal
     });
-    if (!r.ok) throw new Error('ANU HTTP ' + r.status);
-    const j = await r.json();
-    if (!j || j.success === false || !Array.isArray(j.data) || typeof j.data[0] !== 'number') {
-      throw new Error('ANU bad response');
-    }
-    return (j.data[0] % max) + 1;
-  } finally { clearTimeout(t); }
+  } catch (e) {
+    clearTimeout(t);
+    if (e && e.name === 'AbortError') throw kwQErr('timeout', 'ANU timeout');
+    throw kwQErr('network', 'ANU network/CORS: ' + (e && e.message));
+  }
+  clearTimeout(t);
+  if (!r.ok) {
+    let body = '';
+    try { body = (await r.text()).slice(0, 300); } catch (e) {}
+    console.warn('[GYO] ANU HTTP ' + r.status + ' — body:', body);   // lets you see exactly what ANU says when quota is gone
+    const limitWords = /quota|limit|exceed|too many|rate|usage|credit/i.test(body);
+    if (r.status === 429 || ((r.status === 402 || r.status === 403) && limitWords)) throw kwQErr('quota', 'ANU quota HTTP ' + r.status);
+    if (r.status === 401 || r.status === 403) throw kwQErr('auth', 'ANU key rejected HTTP ' + r.status);
+    throw kwQErr('server', 'ANU HTTP ' + r.status);
+  }
+  let j;
+  try { j = await r.json(); } catch (e) { throw kwQErr('server', 'ANU bad JSON'); }
+  if (!j || j.success === false || !Array.isArray(j.data) || typeof j.data[0] !== 'number') {
+    console.warn('[GYO] ANU unusable response:', j);
+    throw kwQErr('server', 'ANU bad response');
+  }
+  return (j.data[0] % max) + 1;
 }
 async function randomOrgFetchN(max) {
   const r = await fetch('https://www.random.org/integers/?num=1&min=1&max=' + max + '&col=1&base=10&format=plain&rnd=new');
@@ -1257,11 +1297,11 @@ async function kwDraw() {
     } else {
       if (statusEl) statusEl.textContent = 'Querying quantum vacuum…';
       try { number = await quantumFetchN(100); }
-      catch {
+      catch (qe) {
+        console.warn('[GYO] quantum draw failed:', qe && qe.kind, qe && qe.message);
         if (statusEl) statusEl.textContent = '';
         btn.disabled = false; btn.textContent = 'Draw Lots'; kwIsDrawing = false;
-        const popup2 = document.getElementById('kw-unreachable-popup');
-        if (popup2) popup2.style.display = 'flex';
+        kwShowUnreachable(qe && qe.kind);
         return;
       }
     }
@@ -1616,10 +1656,10 @@ if (document.readyState === 'loading') {
   <div style="position:relative; background:#0a0030; border:1px solid rgba(255,100,100,0.45); border-radius:18px; padding:28px 22px; width:100%; max-width:380px; text-align:center; box-shadow:0 0 40px rgba(255,80,80,0.25);">
     <button id="kw-unreachable-close" type="button" aria-label="Close" onclick="kwCloseUnreachable()">✕</button>
     <div style="font-size:32px; margin-bottom:12px;">⚠️</div>
-    <div style="font-family:'Cinzel',serif; font-size:14px; color:#ff8a80; letter-spacing:0.08em; margin-bottom:10px;">Quantum source unreachable</div>
-    <div style="font-family:'Crimson Pro',serif; font-size:14px; font-style:italic; color:rgba(255,255,255,0.6); margin-bottom:22px; line-height:1.6;">The quantum vacuum API is not responding at this moment. You may try again or switch to another source.</div>
+    <div style="font-family:'Cinzel',serif; font-size:14px; color:#ff8a80; letter-spacing:0.08em; margin-bottom:10px;" id="kw-unreach-title">Quantum source unreachable</div>
+    <div style="font-family:'Crimson Pro',serif; font-size:14px; font-style:italic; color:rgba(255,255,255,0.6); margin-bottom:22px; line-height:1.6;" id="kw-unreach-desc">The quantum vacuum API is not responding at this moment. You may try again or switch to another source.</div>
     <div style="display:flex; flex-direction:column; gap:10px;">
-      <button onclick="kwRetryQuantum()" style="width:100%; padding:14px; background:rgba(0,191,255,0.15); border:1px solid rgba(0,191,255,0.4); color:#00BFFF; font-family:'Cinzel',serif; font-size:13px; letter-spacing:0.1em; border-radius:10px; cursor:pointer;">↺ Try Again</button>
+      <button id="kw-unreach-retry" onclick="kwRetryQuantum()" style="width:100%; padding:14px; background:rgba(0,191,255,0.15); border:1px solid rgba(0,191,255,0.4); color:#00BFFF; font-family:'Cinzel',serif; font-size:13px; letter-spacing:0.1em; border-radius:10px; cursor:pointer;">↺ Try Again</button>
       <div style="display:flex; gap:10px;">
         <button onclick="kwSwitchTo('random-org')" style="flex:1; padding:13px 8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.85); font-family:'Cinzel',serif; font-size:12px; letter-spacing:0.08em; border-radius:10px; cursor:pointer;">📡 Use Atm.</button>
         <button onclick="kwSwitchTo('crypto')" style="flex:1; padding:13px 8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.85); font-family:'Cinzel',serif; font-size:12px; letter-spacing:0.08em; border-radius:10px; cursor:pointer;">🔐 Use Crypto</button>
