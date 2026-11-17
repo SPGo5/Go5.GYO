@@ -395,17 +395,18 @@ button:active, a.card:active, [onclick]:active {
   100% { opacity: 1; transform: scale(1); }
 }
 #kw-flash-number {
+  --glow-rgb: 204,255,0;
   font-family: 'Cormorant Garamond', serif;
   font-weight: 700;
   font-size: clamp(120px, 40vw, 240px);
   line-height: 1;
   color: #ccff00;
-  text-shadow: 0 0 20px rgba(204,255,0,0.95), 0 0 60px rgba(204,255,0,0.6), 0 0 120px rgba(204,255,0,0.3);
+  text-shadow: 0 0 20px rgba(var(--glow-rgb),1), 0 0 60px rgba(var(--glow-rgb),0.9), 0 0 120px rgba(var(--glow-rgb),0.6);
   animation: kwFlashPulse 0.6s ease-in-out infinite alternate;
 }
 @keyframes kwFlashPulse {
-  0% { text-shadow: 0 0 20px rgba(204,255,0,0.95), 0 0 60px rgba(204,255,0,0.6); }
-  100% { text-shadow: 0 0 40px rgba(204,255,0,1), 0 0 100px rgba(204,255,0,0.9), 0 0 160px rgba(204,255,0,0.5); }
+  0%   { text-shadow: 0 0 20px rgba(var(--glow-rgb),1), 0 0 60px rgba(var(--glow-rgb),0.85), 0 0 100px rgba(var(--glow-rgb),0.55); }
+  100% { text-shadow: 0 0 36px rgba(var(--glow-rgb),1), 0 0 100px rgba(var(--glow-rgb),1), 0 0 180px rgba(var(--glow-rgb),0.8); }
 }
 #kw-flash-label {
   font-family: 'Cinzel', serif;
@@ -415,9 +416,41 @@ button:active, a.card:active, [onclick]:active {
   margin-top: 16px;
   text-transform: uppercase;
 }
+
+/* ── Last Updated stamp (shown on every screen) ── */
+#gyo-version {
+  position: fixed;
+  left: 0; right: 0; bottom: 4px;
+  text-align: center;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: rgba(255,255,255,0.5);
+  text-shadow: 0 0 4px rgba(0,0,40,0.9), 0 0 8px rgba(0,0,40,0.9);
+  pointer-events: none;
+  z-index: 50;
+}
 </style>
 </head>
 <body>
+
+<!-- LAST UPDATED STAMP: fully automatic. Reads the server's Last-Modified time of THIS file; nothing to edit. -->
+<div id="gyo-version">Last Updated: …</div>
+<script>
+(function () {
+  var el = document.getElementById('gyo-version');
+  if (!el) return;
+  var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var d = new Date(document.lastModified);
+  // If the server sends no Last-Modified header, browsers return "now" — don't show that as a real stamp.
+  if (isNaN(d.getTime()) || Math.abs(Date.now() - d.getTime()) < 5000) {
+    el.textContent = 'Last Updated: unavailable';
+    return;
+  }
+  var p = function (n) { return String(n).padStart(2, '0'); };
+  el.textContent = 'Last Updated: ' + m[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear() + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+})();
+</script>
 
 <!-- Profile pic corner -->
 <div id="profile-corner" onclick="toggleLogoutPopup()">
@@ -967,7 +1000,7 @@ function renderHistorySlots() {
       html += `${warn}<div class="hist-slot" id="hist-slot-${i}">
         <div class="hist-slot-num">Draw ${i+1} · ${entry.datetime || ''}</div>
         <div>
-          <span class="hist-slot-lot">${entry.lot}</span>
+          <span class="hist-slot-lot" style="color:#ccff00; text-shadow:${kwGlowShadow(kwTier(entry.lot).rgb, 0.6)};">${entry.lot}</span>
           <span class="hist-slot-date">${entry.source || ''}</span>
         </div>
         <div class="hist-slot-q">${escHtml(qPreview)}</div>
@@ -1010,7 +1043,7 @@ function kwShowResultNoSave() {
   const rawQ = (document.getElementById('kw-question') || {}).value || '';
   const smartQ = kwSmartCapitalise(rawQ);
   const qEl = document.getElementById('kw-result-question'); if (qEl) qEl.textContent = smartQ || '(No question entered)';
-  const lotEl = document.getElementById('kw-result-lot-num'); if (lotEl) lotEl.textContent = kwLastNumber;
+  const lotEl = document.getElementById('kw-result-lot-num'); if (lotEl) { lotEl.textContent = kwLastNumber; kwApplyLotGlow(lotEl, kwLastNumber, 1.2); }
   const dtEl = document.getElementById('kw-result-datetime'); if (dtEl) dtEl.textContent = kwResultDateTime;
   const LOT_BASE = 'https://sites.google.com/view/divinationitsutsuji/%E8%A7%80%E9%9F%B3%E9%9D%88%E7%B0%BD-guan-yin-fortune-divination-quan-%C3%A2m-linh-thi%C3%AAm/lots/';
   const linkEl = document.getElementById('kw-lot-link'); if (linkEl) linkEl.href = LOT_BASE + kwLastNumber;
@@ -1167,10 +1200,50 @@ function resetKwanyin() {
   kwUpdateLastAskBtn();
 }
 
+// ── Lot tiers (same sets & shades as the Lots Directory) ──
+const GYO_UPPER  = new Set([1,4,8,11,12,18,21,42,43,45,47,51,67,73,78,80,81,86,89,90,92,96]);
+const GYO_LOWER  = new Set([2,3,7,24,38,39,54,60,64,65,66,70,74,84,94,98,99,100]);
+function kwTier(n) {
+  n = Number(n);
+  if (GYO_UPPER.has(n)) return { name: 'upper',  hex: '#E0B0FF', rgb: '224,176,255' };
+  if (GYO_LOWER.has(n)) return { name: 'lower',  hex: '#FF3131', rgb: '255,49,49' };
+  return                       { name: 'middle', hex: '#00BFFF', rgb: '0,191,255' };
+}
+// Strong (near-opaque) layered glow. k scales blur radii to the text size.
+function kwGlowShadow(rgb, k) {
+  k = k || 1;
+  return '0 0 ' + (6*k) + 'px rgba(' + rgb + ',1), '
+       + '0 0 ' + (16*k) + 'px rgba(' + rgb + ',1), '
+       + '0 0 ' + (34*k) + 'px rgba(' + rgb + ',0.9), '
+       + '0 0 ' + (64*k) + 'px rgba(' + rgb + ',0.65)';
+}
+function kwApplyLotGlow(el, n, k) {
+  if (!el) return;
+  const t = kwTier(n);
+  el.style.color = '#ccff00';
+  el.style.textShadow = kwGlowShadow(t.rgb, k);
+}
+
+// ANU Quantum Numbers API (new endpoint, API-key required).
+// NOTE: key is exposed client-side — temporary; move behind a proxy later.
+const ANU_QRNG_URL = 'https://api.quantumnumbers.anu.edu.au';
+const ANU_QRNG_KEY = 'RIZNpWj4Z28WM9QzBU0Gs6ZZrgjkQiJL3F0gvhds';
 async function quantumFetchN(max) {
-  const r = await fetch('https://qrng.anu.edu.au/API/jsonI.php?length=1&type=uint16');
-  const j = await r.json();
-  return (j.data[0] % max) + 1;
+  // One request uses 1 of the monthly quota; ask for 1 uint16 only.
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 10000);
+  try {
+    const r = await fetch(ANU_QRNG_URL + '?length=1&type=uint16', {
+      headers: { 'x-api-key': ANU_QRNG_KEY },
+      signal: ctrl.signal
+    });
+    if (!r.ok) throw new Error('ANU HTTP ' + r.status);
+    const j = await r.json();
+    if (!j || j.success === false || !Array.isArray(j.data) || typeof j.data[0] !== 'number') {
+      throw new Error('ANU bad response');
+    }
+    return (j.data[0] % max) + 1;
+  } finally { clearTimeout(t); }
 }
 async function randomOrgFetchN(max) {
   const r = await fetch('https://www.random.org/integers/?num=1&min=1&max=' + max + '&col=1&base=10&format=plain&rnd=new');
@@ -1240,6 +1313,8 @@ async function kwDraw() {
     const flashLabel = document.getElementById('kw-flash-label');
     if (overlay && flashNum) {
       flashNum.textContent = number;
+      const _ft = kwTier(number);
+      flashNum.style.setProperty('--glow-rgb', _ft.rgb);
       if (flashLabel) flashLabel.textContent = fateLabels[sourceUsed] || 'The oracle has spoken';
       overlay.style.display = 'flex';
       setTimeout(() => {
@@ -1272,7 +1347,7 @@ function kwShowResult() {
   const rawQ = (document.getElementById('kw-question') || {}).value || '';
   const smartQ = kwSmartCapitalise(rawQ);
   const qEl = document.getElementById('kw-result-question'); if (qEl) qEl.textContent = smartQ || '(No question entered)';
-  const lotEl = document.getElementById('kw-result-lot-num'); if (lotEl) lotEl.textContent = kwLastNumber;
+  const lotEl = document.getElementById('kw-result-lot-num'); if (lotEl) { lotEl.textContent = kwLastNumber; kwApplyLotGlow(lotEl, kwLastNumber, 1.2); }
   const dtEl = document.getElementById('kw-result-datetime'); if (dtEl) dtEl.textContent = kwResultDateTime;
   const LOT_BASE = 'https://sites.google.com/view/divinationitsutsuji/%E8%A7%80%E9%9F%B3%E9%9D%88%E7%B0%BD-guan-yin-fortune-divination-quan-%C3%A2m-linh-thi%C3%AAm/lots/';
   const linkEl = document.getElementById('kw-lot-link'); if (linkEl) linkEl.href = LOT_BASE + kwLastNumber;
@@ -1469,11 +1544,14 @@ function kwCopyResultImage(onDoneCallback) {
     ctx.fillText('Lot', bx + boxPad, lotLineY);
 
     // Lot number
+    const _tier = kwTier(lotNum);
     ctx.fillStyle = '#ccff00';
     ctx.font = '700 ' + px(72) + 'px "Cormorant Garamond", serif';
-    ctx.save(); ctx.shadowColor = 'rgba(204,255,0,0.9)'; ctx.shadowBlur = px(8);
-    ctx.fillText(String(lotNum), bx + boxPad + px(80), lotLineY);
+    ctx.save(); ctx.shadowColor = 'rgba(' + _tier.rgb + ',1)';
+    // Stack passes so the glow stays strong (canvas shadows are single-layer)
+    [px(30), px(16), px(8)].forEach(function(b){ ctx.shadowBlur = b; ctx.fillText(String(lotNum), bx + boxPad + px(80), lotLineY); });
     ctx.restore();
+    ctx.fillText(String(lotNum), bx + boxPad + px(80), lotLineY);
 
     // Source note
     const srcLabels = { 'quantum': '⚛️ Quantum', 'random-org': '📡 Atm.', 'crypto': '🔐 Crypto' };
