@@ -1126,14 +1126,16 @@ kwResultDateTime = '';
 kwSelectedMethod = 'quantum';
 kwIsDrawing = false;
 
-// Show the popup with wording that matches WHY the quantum draw failed.
+// Show the popup with wording that matches WHY the quantum draw failed.  [title, text, showTryAgain]
 function kwShowUnreachable(kind) {
   const T = {
-    quota:   ['Quantum quota used up',            'The free quantum draws for this month have been used up, so the quantum source cannot be used until the quota resets. Please switch to another source.', false],
-    auth:    ['Quantum key not accepted',         'The quantum service did not accept the access key. This is a setup problem, not a network problem. Please switch to another source for now.', false],
-    server:  ['Quantum server problem',           'The quantum server answered but could not give a number right now. You may try again or switch to another source.', true],
-    timeout: ['Quantum server not responding',    'The quantum server took too long to answer. You may try again or switch to another source.', true],
-    network: ['Quantum source unreachable',       'The quantum server could not be reached (no connection, or the request was blocked). You may try again or switch to another source.', true]
+    sharedlimit: ['Free quantum draws used up', "You've used up your free 3 monthly draws. Use a different method, wait for the next month cycle, or submit your own API key (free).", false],
+    quota:       ['Quantum draws used up',      "Your ANU keys and your shared quantum draws are all used up for this month. Please use a different method or wait for the next month cycle.", false],
+    sharedempty: ['Shared quantum key used up', 'The shared quantum key has no draws left this month. Please use a different method, or submit your own API key (free) to get your own monthly allowance.', false],
+    auth:        ['Quantum access problem',     'Your account could not be matched to a working quantum key. Please use a different method for now.', false],
+    server:      ['Quantum server problem',     'The quantum server could not give a number right now. You may try again or switch to another source.', true],
+    timeout:     ['Quantum server not responding', 'The quantum server took too long to answer. You may try again or switch to another source.', true],
+    network:     ['Quantum source unreachable', 'The quantum server could not be reached (no connection, or the request was blocked). You may try again or switch to another source.', true]
   };
   const t = T[kind] || T.network;
   const ti = document.getElementById('kw-unreach-title'); if (ti) ti.textContent = t[0];
@@ -1217,50 +1219,77 @@ function kwApplyLotGlow(el, n, k) {
   el.style.textShadow = kwGlowShadow(t.rgb, k);
 }
 
-// ANU Quantum Numbers API (new endpoint, API-key required).
-// NOTE: key is exposed client-side — temporary; move behind a proxy later.
-const ANU_QRNG_URL = 'https://api.quantumnumbers.anu.edu.au';
-const ANU_QRNG_KEY = 'RIZNpWj4Z28WM9QzBU0Gs6ZZrgjkQiJL3F0gvhds';
+// ── Quantum draw via the Apps Script backend ──
+// The user's personal ANU keys (sheet columns AT/AU) and the shared key stay in Apps Script.
+// The browser only sends the saved login email and receives a number 1-100.
 // Failure kinds thrown by quantumFetchN (err.kind):
-//   'quota'   – monthly free quota used up (HTTP 429, or 402/403 whose body mentions a limit/quota)
-//   'auth'    – key rejected/missing (HTTP 401, or 403 that is not about quota)
-//   'server'  – ANU answered with 5xx or an unusable response
-//   'timeout' – no answer within 10 s
-//   'network' – request never completed (offline, DNS, or blocked by CORS — the browser can't tell these apart)
+//   'sharedlimit' – no personal key, and the 3 shared draws for this month are used
+//   'quota'       – personal key(s) and shared draws are all used up
+//   'sharedempty' – the shared key itself has run out for the month
+//   'auth'        – account/key problem (email not recognised, or keys rejected)
+//   'server' | 'timeout' | 'network' – backend or ANU could not be reached
 function kwQErr(kind, msg) { const e = new Error(msg); e.kind = kind; return e; }
-async function quantumFetchN(max) {
-  // One request uses 1 of the monthly quota; ask for 1 uint16 only.
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 10000);
-  let r;
+
+function kwUserEmail() {
   try {
-    r = await fetch(ANU_QRNG_URL + '?length=1&type=uint16', {
-      headers: { 'x-api-key': ANU_QRNG_KEY },
-      signal: ctrl.signal
-    });
-  } catch (e) {
-    clearTimeout(t);
-    if (e && e.name === 'AbortError') throw kwQErr('timeout', 'ANU timeout');
-    throw kwQErr('network', 'ANU network/CORS: ' + (e && e.message));
-  }
-  clearTimeout(t);
-  if (!r.ok) {
-    let body = '';
-    try { body = (await r.text()).slice(0, 300); } catch (e) {}
-    console.warn('[GYO] ANU HTTP ' + r.status + ' — body:', body);   // lets you see exactly what ANU says when quota is gone
-    const limitWords = /quota|limit|exceed|too many|rate|usage|credit/i.test(body);
-    if (r.status === 429 || ((r.status === 402 || r.status === 403) && limitWords)) throw kwQErr('quota', 'ANU quota HTTP ' + r.status);
-    if (r.status === 401 || r.status === 403) throw kwQErr('auth', 'ANU key rejected HTTP ' + r.status);
-    throw kwQErr('server', 'ANU HTTP ' + r.status);
-  }
-  let j;
-  try { j = await r.json(); } catch (e) { throw kwQErr('server', 'ANU bad JSON'); }
-  if (!j || j.success === false || !Array.isArray(j.data) || typeof j.data[0] !== 'number') {
-    console.warn('[GYO] ANU unusable response:', j);
-    throw kwQErr('server', 'ANU bad response');
-  }
-  return (j.data[0] % max) + 1;
+    const s = JSON.parse(localStorage.getItem('go_saved_user') || 'null');
+    return (s && s.email) ? String(s.email) : '';
+  } catch (e) { return ''; }
 }
+function kwGasPromise(params, timeoutMs) {
+  return new Promise(function (resolve, reject) { gasJsonp(params, resolve, reject, timeoutMs); });
+}
+
+let kwQStatus = null;   // cached { registered, hasOwnKey, sharedLeft, __email } from action=qrngStatus
+
+async function quantumFetchN(max) {
+  const email = kwUserEmail();
+  if (!email) throw kwQErr('auth', 'no saved email');
+  let d;
+  try { d = await kwGasPromise('action=qrng&email=' + encodeURIComponent(email), 25000); }
+  catch (e) { throw kwQErr(String(e) === 'Timeout' ? 'timeout' : 'network', 'GAS: ' + e); }
+  if (d && d.ok === true && typeof d.number === 'number') {
+    if (kwQStatus && kwQStatus.__email === email && typeof d.sharedLeft === 'number') kwQStatus.sharedLeft = d.sharedLeft;
+    return d.number;                       // backend already returns 1..100
+  }
+  console.warn('[GYO] quantum draw refused:', d);   // e.g. {error:"Unknown action: qrng"} = backend not redeployed
+  const map = { not_registered: 'auth', auth: 'auth', shared_limit: 'sharedlimit', shared_empty: 'sharedempty',
+                quota: 'quota', server: 'server', network: 'network' };
+  throw kwQErr((d && map[d.code]) || 'server', 'GAS code ' + (d && (d.code || d.error)));
+}
+
+// ── "No personal ANU key" notice (shown before a quantum draw, unless the user ticked "do not show again") ──
+let kwAnuIntroResolve = null;
+function kwAnuIntroKey() { return 'gyo_anu_intro_hidden_' + (currentUser || kwUserEmail() || 'guest'); }
+function kwAnuIntroHidden() { try { return localStorage.getItem(kwAnuIntroKey()) === '1'; } catch (e) { return false; } }
+function kwAnuIntroShow() {
+  return new Promise(function (resolve) {
+    const pop = document.getElementById('kw-anu-intro-popup');
+    if (!pop) { resolve(); return; }
+    kwAnuIntroResolve = resolve;
+    const chk = document.getElementById('kw-anu-intro-chk'); if (chk) chk.checked = false;
+    pop.style.display = 'flex';
+  });
+}
+function kwAnuIntroClose() {
+  const chk = document.getElementById('kw-anu-intro-chk');
+  if (chk && chk.checked) { try { localStorage.setItem(kwAnuIntroKey(), '1'); } catch (e) {} }
+  const pop = document.getElementById('kw-anu-intro-popup'); if (pop) pop.style.display = 'none';
+  const r = kwAnuIntroResolve; kwAnuIntroResolve = null; if (r) r();   // Close = continue with the draw
+}
+async function kwQuantumPreflight() {
+  if (kwAnuIntroHidden()) return;
+  const email = kwUserEmail(); if (!email) return;
+  if (!kwQStatus || kwQStatus.__email !== email) {
+    try {
+      const st = await kwGasPromise('action=qrngStatus&email=' + encodeURIComponent(email), 15000);
+      if (!st || !st.registered) return;
+      st.__email = email; kwQStatus = st;
+    } catch (e) { return; }                // status is only a courtesy; the draw call reports real errors
+  }
+  if (kwQStatus.hasOwnKey === false && kwQStatus.sharedLeft > 0) await kwAnuIntroShow();
+}
+
 async function randomOrgFetchN(max) {
   const r = await fetch('https://www.random.org/integers/?num=1&min=1&max=' + max + '&col=1&base=10&format=plain&rnd=new');
   return parseInt(await r.text());
@@ -1296,7 +1325,7 @@ async function kwDraw() {
       catch { if (statusEl) statusEl.textContent = 'Atm. unreachable — using crypto'; number = cryptoRandN(100); sourceUsed = 'crypto'; }
     } else {
       if (statusEl) statusEl.textContent = 'Querying quantum vacuum…';
-      try { number = await quantumFetchN(100); }
+      try { await kwQuantumPreflight(); number = await quantumFetchN(100); }
       catch (qe) {
         console.warn('[GYO] quantum draw failed:', qe && qe.kind, qe && qe.message);
         if (statusEl) statusEl.textContent = '';
@@ -1665,6 +1694,23 @@ if (document.readyState === 'loading') {
         <button onclick="kwSwitchTo('crypto')" style="flex:1; padding:13px 8px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.2); color:rgba(255,255,255,0.85); font-family:'Cinzel',serif; font-size:12px; letter-spacing:0.08em; border-radius:10px; cursor:pointer;">🔐 Use Crypto</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- "No personal ANU key" notice -->
+<div id="kw-anu-intro-popup" style="display:none; position:fixed; inset:0; z-index:99998; background:rgba(0,0,30,0.85); align-items:center; justify-content:center; padding:20px; overflow-y:auto;">
+  <div style="background:#0a0030; border:1px solid rgba(0,191,255,0.45); border-radius:18px; padding:26px 22px; width:100%; max-width:380px; box-shadow:0 0 40px rgba(0,191,255,0.25); margin:auto;">
+    <div style="font-size:30px; text-align:center; margin-bottom:12px;">⚛️</div>
+    <div style="font-family:'Crimson Pro',serif; font-size:15px; line-height:1.6; color:#ffffff; margin-bottom:12px;">ANU Quantum is the recommended method for generating true randomness.</div>
+    <div style="font-family:'Crimson Pro',serif; font-size:14px; line-height:1.6; color:rgba(255,255,255,0.75); margin-bottom:12px;">You have not provided your ANU API key yet, so you are currently limited to 3 draws per month using the shared key. Once this limit is reached, please switch to Atmospheric or Cryptographic generation.</div>
+    <div style="font-family:'Crimson Pro',serif; font-size:14px; line-height:1.6; color:rgba(255,255,255,0.75); margin-bottom:12px;">To increase your limit to 100 draws per month, sign up for a free key from ANU and send it to me in a message so I can add it to the system.</div>
+    <div style="font-family:'Crimson Pro',serif; font-size:14px; line-height:1.6; color:rgba(255,255,255,0.75); margin-bottom:10px;">Follow the instructions to get your key here:</div>
+    <a href="https://quantumnumbers.anu.edu.au/" target="_blank" rel="noopener noreferrer" style="display:block; width:100%; box-sizing:border-box; text-align:center; text-decoration:none; padding:13px; background:rgba(0,191,255,0.15); border:1px solid rgba(0,191,255,0.5); color:#00BFFF; font-family:'Cinzel',serif; font-size:12px; letter-spacing:0.1em; border-radius:10px; margin-bottom:16px;">Get your free ANU key ↗</a>
+    <label style="display:flex; align-items:center; gap:10px; font-family:'Crimson Pro',serif; font-size:14px; color:rgba(255,255,255,0.85); margin-bottom:16px; cursor:pointer;">
+      <input type="checkbox" id="kw-anu-intro-chk" style="width:18px; height:18px; flex-shrink:0;">
+      <span>Understood. Do not show again</span>
+    </label>
+    <button type="button" onclick="kwAnuIntroClose()" style="width:100%; padding:14px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.3); color:#ffffff; font-family:'Cinzel',serif; font-size:13px; letter-spacing:0.1em; border-radius:10px; cursor:pointer;">Close</button>
   </div>
 </div>
 
